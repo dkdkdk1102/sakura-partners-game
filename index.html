@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1b1430">
+<title>伊豆の旅 〜うさぎと、伊東をめざして〜｜サクラパートナーズ</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- top bar: pause / sound / music / fullscreen -->
+  <div class="topbar">
+    <button id="btn-pause" class="topbtn" aria-label="ポーズ">⏸</button>
+    <button id="btn-sound" class="topbtn" aria-label="音">🔊</button>
+    <button id="btn-music" class="topbtn" aria-label="音楽">♪</button>
+    <button id="btn-fs" class="topbtn" aria-label="全画面">⛶</button>
+  </div>
+
+  <!-- on-screen touch controls -->
+  <div class="controls" id="controls">
+    <div class="dpad">
+      <button id="btn-left" class="ctl" aria-label="左">◀</button>
+      <button id="btn-down" class="ctl small" aria-label="しゃがむ">▼</button>
+      <button id="btn-right" class="ctl" aria-label="右">▶</button>
+    </div>
+    <div class="actions">
+      <button id="btn-run" class="ctl dash" aria-label="ダッシュ">Ｂ</button>
+      <button id="btn-jump" class="ctl jump" aria-label="ジャンプ">⤴</button>
+    </div>
+  </div>
+
+  <!-- data (plain globals so the game runs from file://) -->
+  <script src="data/atlas.js"></script>
+  <script src="data/facts.js"></script>
+
+  <!-- engine -->
+  <script src="js/engine/util.js"></script>
+  <script src="js/engine/ui.js"></script>
+  <script src="js/engine/assets.js"></script>
+  <script src="js/engine/anim.js"></script>
+  <script src="js/engine/input.js"></script>
+  <script src="js/engine/audio.js"></script>
+  <script src="js/engine/core.js"></script>
+
+  <!-- game -->
+  <script src="js/game/camera.js"></script>
+  <script src="js/game/tilemap.js"></script>
+  <script src="js/game/entity.js"></script>
+  <script src="js/game/player.js"></script>
+  <script src="js/game/particles.js"></script>
+  <script src="js/game/items.js"></script>
+  <script src="js/game/enemies.js"></script>
+  <script src="js/game/projectile.js"></script>
+  <script src="js/game/boss.js"></script>
+  <script src="js/game/level.js"></script>
+  <script src="js/game/songs.js"></script>
+  <script src="js/game/hud.js"></script>
+  <script src="js/game/game.js"></script>
+  <script src="js/game/scenes.js"></script>
+  <script src="js/game/levels.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

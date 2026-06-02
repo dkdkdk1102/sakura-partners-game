@@ -1,0 +1,57 @@
+/* style.css — fullscreen landscape kiosk layout. Canvas fills the viewport;
+   translucent touch controls sit in the bottom corners (also clickable on
+   desktop). No external fonts so it works offline. */
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%; width: 100%;
+  overflow: hidden; background: #14101f;
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none; overscroll-behavior: none;
+  font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+}
+#game { display: block; width: 100vw; height: 100vh; image-rendering: auto; }
+
+/* ---- top bar ---- */
+.topbar {
+  position: fixed; top: env(safe-area-inset-top, 8px); right: 10px;
+  display: flex; gap: 8px; z-index: 20;
+}
+.topbtn {
+  width: 46px; height: 46px; border: none; border-radius: 14px;
+  background: rgba(255,255,255,0.22); color: #fff; font-size: 20px;
+  backdrop-filter: blur(4px); cursor: pointer; line-height: 1;
+  transition: transform .08s, background .15s;
+}
+.topbtn:hover { background: rgba(255,255,255,0.34); }
+.topbtn:active { transform: scale(0.92); }
+.topbtn.off { opacity: 0.5; }
+
+/* ---- touch controls ---- */
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  padding: 0 max(18px, env(safe-area-inset-left)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-right));
+  pointer-events: none;
+}
+.dpad, .actions { display: flex; align-items: flex-end; gap: 14px; pointer-events: none; }
+.ctl {
+  pointer-events: auto; border: none; cursor: pointer; color: #fff;
+  background: rgba(40,30,60,0.34); backdrop-filter: blur(3px);
+  border: 2px solid rgba(255,255,255,0.35);
+  width: 78px; height: 78px; border-radius: 50%;
+  font-size: 30px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  transition: transform .06s, background .12s;
+  touch-action: none;
+}
+.ctl.small { width: 60px; height: 60px; font-size: 22px; }
+.ctl.jump { width: 104px; height: 104px; font-size: 44px; background: rgba(255,120,150,0.42); border-color: rgba(255,255,255,0.6); }
+.ctl.dash { width: 78px; height: 78px; font-size: 30px; background: rgba(120,180,255,0.4); }
+.ctl.active, .ctl:active { transform: scale(0.9); background: rgba(255,255,255,0.55); color: #3a2030; }
+
+/* hide the touch d-pad hints a touch on very small heights */
+@media (max-height: 420px) {
+  .ctl { width: 64px; height: 64px; font-size: 24px; }
+  .ctl.jump { width: 84px; height: 84px; font-size: 36px; }
+}
