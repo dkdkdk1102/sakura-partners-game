@@ -117,9 +117,10 @@ const Audio2 = {
     }
   },
 
-  toggleMute() { this.muted = !this.muted; return this.muted; },
+  toggleMute() { this.muted = !this.muted; if (window.Playlist) Playlist.refresh(); return this.muted; },
   toggleMusic() {
     this.musicOn = !this.musicOn;
+    if (window.Playlist) Playlist.refresh();
     return this.musicOn;
   },
 };

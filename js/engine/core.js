@@ -61,6 +61,9 @@ const Engine = {
     if (steps === 5) this._acc = 0; // avoid spiral of death
     if (steps === 0) Input.update(); // keep input fresh on sub-step frames (menus poll every frame)
 
+    // interpolation factor for smooth rendering between fixed steps (0..1)
+    this.alpha = clamp(this._acc / this.DT, 0, 1);
+
     const ctx = this.ctx;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;

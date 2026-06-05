@@ -56,6 +56,7 @@ class GameScene {
     this._buttons();
 
     Audio2.ensure();
+    if (window.Playlist) Playlist.stop(); // menu MP3 playlist off during gameplay
     // normal theme until the player reaches the boss arena (boss music starts then)
     Audio2.playSong(SONGS[THEME_SONG[def.theme]] || SONGS.field);
   }
@@ -145,9 +146,29 @@ class GameScene {
     if (this.paused) { this._pauseUpdate(); return; }
     if (Input.pressed('pause') && this.state === 'play') { this.togglePause(); return; }
 
-    if (this.state === 'play') this._play(dt);
-    else if (this.state === 'cleared') this._clearedUpdate(dt);
+    if (this.state === 'play') { this._snapshotPrev(); this._play(dt); }
+    else if (this.state === 'cleared') { this._snapshotPrev(); this._clearedUpdate(dt); }
     else if (this.state === 'gameover') this._gameoverUpdate(dt);
+  }
+
+  // record positions before a physics step so render can interpolate between
+  // the previous and current step (smooth motion at any refresh rate)
+  _snapshotPrev() {
+    const s = (o) => { if (o) { o.prevX = o.x; o.prevY = o.y; } };
+    s(this.player);
+    for (const e of this.enemies) s(e);
+    for (const it of this.items) s(it);
+    for (const pr of this.projectiles) s(pr);
+    for (const h of this.hazards) s(h);
+    s(this.boss);
+    this.cam.prevX = this.cam.x; this.cam.prevY = this.cam.y;
+  }
+  // draw an object at its interpolated position, then restore (render reads x/y)
+  _drawI(ctx, o, A, fn) {
+    const ox = o.x, oy = o.y;
+    if (o.prevX != null) { o.x = o.prevX + (ox - o.prevX) * A; o.y = o.prevY + (oy - o.prevY) * A; }
+    fn();
+    o.x = ox; o.y = oy;
   }
 
   togglePause() {
@@ -310,27 +331,34 @@ class GameScene {
   // ---- render ------------------------------------------------------------
   render(ctx) {
     const W = Engine.W, H = Engine.H;
-    this.bg.render(ctx, this.cam, W, H);
+    const A = Engine.alpha != null ? Engine.alpha : 1;
+    const cam = this.cam;
+    // interpolate the camera between steps so the whole world scrolls smoothly
+    const crx = cam.x, cry = cam.y;
+    if (cam.prevX != null) { cam.x = cam.prevX + (crx - cam.prevX) * A; cam.y = cam.prevY + (cry - cam.prevY) * A; }
+
+    this.bg.render(ctx, cam, W, H);
 
     ctx.save();
-    this.cam.apply(ctx);
+    cam.apply(ctx);
     for (const d of this.bgDecor) if (this._inView(d.x, 400)) this._decor(ctx, d);
-    this.map.render(ctx, this.cam);
+    this.map.render(ctx, cam);
     for (const blk of this.map.blocks.values()) { const wx = blk.x; if (this._inView(wx, 200)) blk.render(ctx); }
     for (const s of this.springs) if (this._inView(s.x, 200)) s.render(ctx);
     for (const c of this.checkpoints) if (this._inView(c.x, 300)) c.render(ctx);
     for (const n of this.npcs) if (this._inView(n.x, 300)) this._npc(ctx, n);
-    for (const it of this.items) if (this._inView(it.x, 200)) it.render(ctx);
-    for (const h of this.hazards) if (this._inView(h.x, 200)) h.render(ctx);
+    for (const it of this.items) if (this._inView(it.x, 200)) this._drawI(ctx, it, A, () => it.render(ctx));
+    for (const h of this.hazards) if (this._inView(h.x, 200)) this._drawI(ctx, h, A, () => h.render(ctx));
     if (this.goal) this.goal.render(ctx);
-    for (const e of this.enemies) if (this._inView(e.cx, 200)) e.render(ctx);
-    if (this.boss) this.boss.render(ctx);
-    for (const pr of this.projectiles) pr.render(ctx);
-    this.player.render(ctx);
+    for (const e of this.enemies) if (this._inView(e.cx, 200)) this._drawI(ctx, e, A, () => e.render(ctx));
+    if (this.boss) this._drawI(ctx, this.boss, A, () => this.boss.render(ctx));
+    for (const pr of this.projectiles) this._drawI(ctx, pr, A, () => pr.render(ctx));
+    this._drawI(ctx, this.player, A, () => this.player.render(ctx));
     this.particles.render(ctx);
     for (const d of this.fgDecor) if (this._inView(d.x, 400)) this._decor(ctx, d);
     this.particles.renderText(ctx, this.cam);
     ctx.restore();
+    cam.x = crx; cam.y = cry; // restore real camera position for next step's logic
 
     if (this.flash > 0) { ctx.save(); ctx.globalAlpha = this.flash; ctx.fillStyle = '#ff5a6e'; ctx.fillRect(0, 0, W, H); ctx.restore(); }
 

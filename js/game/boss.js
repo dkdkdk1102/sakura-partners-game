@@ -63,7 +63,9 @@ class Boss extends Entity {
     if (!this.armed) {
       const p = GAME.player;
       if (p && Math.abs(p.cx - this.cx) < this.activateRange()) {
-        this.armed = true; this.intro = 1.1; GAME.onBossActivated(this);
+        // every fresh fight starts at full HP (guarantees a full heal after a
+        // respawn even if the death path somehow skipped reset())
+        this.armed = true; this.hp = this.maxHp; this.intro = 1.1; GAME.onBossActivated(this);
       } else {
         if (this.cfg.mode === 'fly') this.y = this.baseY + Math.sin(this.t * 1.5) * 10;
         else { this.applyGravity(dt); this.moveAndCollide(map, dt); }

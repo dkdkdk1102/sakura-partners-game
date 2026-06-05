@@ -3,7 +3,7 @@
    layer a sky gradient, drifting clouds, distant landmark silhouettes, an optional
    sea band, and ambient petals/bubbles so each Izu area reads at a glance. */
 
-const ROWS = 16;            // map height in tiles
+const ROWS = 14;            // map height in tiles (≈2 tiles of earth show below the surface)
 const GROUND = 12;          // default ground surface row
 
 const THEMES = {

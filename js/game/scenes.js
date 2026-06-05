@@ -58,9 +58,10 @@ class TitleScene {
     this.help = new Button('あそびかた', 0, 0, 200, 54, { color: '#9fd3ff', size: 20 });
     this.sound = new Button('♪ 音 ON', 0, 0, 200, 54, { color: '#ffd06b', size: 20 });
     this.layout(Engine.W, Engine.H);
-    Audio2.ensure();
-    if (Audio2.ctx && Audio2.ctx.state === 'running') Audio2.playSong(SONGS.title);
-    Input.onGesture = () => { Audio2.ensure(); Audio2.playSong(SONGS.title); };
+    // main-screen BGM = the MP3 playlist (random, auto-advancing); no synth here
+    Audio2.ensure(); Audio2.stopSong();
+    Playlist.start();
+    Input.onGesture = () => { Audio2.ensure(); Playlist.start(); };
   }
   exit() { Input.onGesture = null; }
   handleResize(W, H) { this.layout(W, H); }
@@ -130,6 +131,7 @@ class DifficultyScene {
     this.normal = new Button('ノーマル', 0, 0, 320, 96, { color: '#ffb86b', size: 32, sub: 'ハート3・残機3。歯ごたえあり' });
     this.back = new Button('もどる', 0, 0, 160, 50, { color: '#cfcfe0', size: 18, text: '#555' });
     this.layout(Engine.W, Engine.H);
+    Playlist.start(); // keep the menu playlist going into the difficulty screen
   }
   handleResize(W, H) { this.layout(W, H); }
   layout(W, H) { this.easy.setCenter(W / 2, H * 0.44); this.normal.setCenter(W / 2, H * 0.62); this.back.setCenter(W / 2, H * 0.8); }
