@@ -50,7 +50,7 @@ class GameScene {
     this.cam.snap(this.player.cx, this.player.cy);
 
     this.state = 'play'; this.paused = false; this.clearT = 0; this.gameoverT = 0;
-    this.bossCleared = false; this.bossClearTimer = 0;
+    this.bossCleared = false; this.bossClearTimer = 0; this.hitstop = 0;
     this.stageNum = this.run.stageIndex + 1; this.stageName = def.name; this.stageSub = def.sub;
     this.stageBannerT = 3; this.ambT = 0; this.flash = 0;
     this._buttons();
@@ -60,7 +60,11 @@ class GameScene {
     // normal theme until the player reaches the boss arena (boss music starts then)
     Audio2.playSong(SONGS[THEME_SONG[def.theme]] || SONGS.field);
   }
-  exit() { Audio2.stopSong(); }
+  exit() {
+    Audio2.stopSong();
+    // restore the ducked pause volume so the next scene's music isn't quiet
+    if (Audio2.musicGain) Audio2.musicGain.gain.value = 0.28;
+  }
 
   _countProperties(b) {
     let n = b.items.filter((it) => it instanceof Property).length;
@@ -189,6 +193,8 @@ class GameScene {
   }
 
   _play(dt) {
+    // brief hit-stop after a boss stomp: freeze the world a few frames for impact
+    if (this.hitstop > 0) { this.hitstop -= dt; return; }
     this.bg.update(dt);
     this._ambiance(dt);
     const p = this.player;
@@ -263,10 +269,13 @@ class GameScene {
     }
     // enemies
     if (p.state === 'play') {
+      // stomp test uses last frame's feet position so a max-speed fall (25px/step)
+      // can't tunnel past the head zone and register as a side hit
+      const prevBottom = p.bottom - Math.max(0, p.vy) * (1 / 60);
       for (const e of this.enemies) {
         if (e.defeated || e.remove) continue;
         if (!aabb(pb.x, pb.y, pb.w, pb.h, e.x, e.y, e.w, e.h)) continue;
-        const stomp = p.vy > 40 && (p.bottom - e.y) < e.h * 0.6;
+        const stomp = p.vy > 40 && (prevBottom - e.y) < e.h * 0.6;
         if (stomp && e.stompable && !e.spiky) { e.defeat(true); p.doBounce(); this.particles.sparkle(e.cx, e.y, 'fx_star', 5); }
         else p.hurt(e.cx);
       }
@@ -282,7 +291,7 @@ class GameScene {
       }
       // boss (only once it has woken up)
       if (this.boss && this.boss.armed && this.boss.state !== 'dead' && aabb(pb.x, pb.y, pb.w, pb.h, this.boss.x, this.boss.y, this.boss.w, this.boss.h)) {
-        const stomp = p.vy > 40 && (p.bottom - this.boss.y) < this.boss.h * 0.55;
+        const stomp = p.vy > 40 && (prevBottom - this.boss.y) < this.boss.h * 0.55;
         if (stomp) this.boss.onStomp(p); else p.hurt(this.boss.cx);
       }
       // goal — locked until the stage boss is defeated
@@ -397,14 +406,14 @@ class GameScene {
     ctx.fillText('クリア！', W / 2, H * 0.4);
     ctx.fillStyle = '#fff'; ctx.font = `700 ${24}px ${FONT}`;
     ctx.fillText(`${this.stageName} を こえた！`, W / 2, H * 0.5);
-    if (Math.floor(this.clearT * 2) % 2 === 0) { ctx.font = `600 ${18}px ${FONT}`; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillText('タップ / ジャンプで つぎへ', W / 2, H * 0.62); }
+    { const pa = (0.65 + 0.2 * Math.sin(this.clearT * 2.5)).toFixed(2); ctx.font = `600 ${18}px ${FONT}`; ctx.fillStyle = `rgba(255,255,255,${pa})`; ctx.fillText('タップ / ジャンプで つぎへ', W / 2, H * 0.62); }
   }
   _renderGameOver(ctx, W, H) {
     this._overlay(ctx, W, H, clamp(this.gameoverT * 0.6, 0, 0.7));
     ctx.textAlign = 'center';
     ctx.fillStyle = '#ff8ba0'; ctx.font = `800 ${50}px ${FONT}`;
     ctx.fillText('ゲームオーバー', W / 2, H * 0.42);
-    if (this.gameoverT > 1 && Math.floor(this.gameoverT * 2) % 2 === 0) { ctx.font = `600 ${18}px ${FONT}`; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillText('タップ / ジャンプ で つづける', W / 2, H * 0.56); }
+    if (this.gameoverT > 1) { const pa = (0.65 + 0.2 * Math.sin(this.gameoverT * 2.5)).toFixed(2); ctx.font = `600 ${18}px ${FONT}`; ctx.fillStyle = `rgba(255,255,255,${pa})`; ctx.fillText('タップ / ジャンプ で つづける', W / 2, H * 0.56); }
   }
 }
 

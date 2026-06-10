@@ -139,14 +139,14 @@ class Player extends Entity {
   }
 
   render(ctx) {
-    const blink = this.iframes > 0 && Math.floor(this.iframes * 20) % 2 === 0;
-    if (blink) return;
+    // invulnerability shows as a steady translucency — never a strobe blink
+    const a = this.iframes > 0 ? 0.55 : 1;
     const name = this.anim.frame();
     if (!name) return;
     const meta = Assets.size(name);
     const h = this.spriteH * (this.crouching ? 0.82 : 1);
     const w = h * (meta.w / meta.h);
-    drawSprite(ctx, name, this.cx, this.bottom + 2, { w, h, flip: this.facing < 0, ax: 0.5, ay: 1 });
+    drawSprite(ctx, name, this.cx, this.bottom + 2, { w, h, flip: this.facing < 0, ax: 0.5, ay: 1, alpha: a });
   }
 }
 

@@ -84,16 +84,27 @@ class Background {
     const ratio = img.width / img.height;
     const drawH = Math.max(H, (W * 1.08) / ratio);
     const drawW = drawH * ratio;
+    const dpr = Engine.dpr || 1;
+    // resample + soften once into an offscreen canvas (the per-frame full-screen
+    // high-quality rescale was the single biggest cost on low-GPU tablets);
+    // regenerate only when the screen size / dpr changes
+    if (!this._bdCache || this._bdW !== drawW || this._bdH !== drawH || this._bdDpr !== dpr) {
+      const c = document.createElement('canvas');
+      c.width = Math.ceil(drawW * dpr); c.height = Math.ceil(drawH * dpr);
+      const cc = c.getContext('2d');
+      cc.imageSmoothingEnabled = true; cc.imageSmoothingQuality = 'high';
+      cc.globalAlpha = 0.88;
+      cc.drawImage(img, 0, 0, c.width, c.height);
+      cc.fillStyle = 'rgba(255,255,255,0.08)';
+      cc.fillRect(0, 0, c.width, c.height);
+      this._bdCache = c; this._bdW = drawW; this._bdH = drawH; this._bdDpr = dpr;
+    }
     const maxCamX = Math.max(1, cam.level.w - cam.viewW);
     const progress = clamp(cam.x / maxCamX, 0, 1);
-    const x = -(drawW - W) * progress;
+    // round to whole device pixels so the copy hits the fast 1:1 blit path
+    const x = Math.round(-(drawW - W) * progress * dpr) / dpr;
     const y = (H - drawH) * 0.38;
-    ctx.save();
-    ctx.globalAlpha = 0.88;
-    ctx.drawImage(img, x, y, drawW, drawH);
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    ctx.fillRect(0, 0, W, H);
-    ctx.restore();
+    ctx.drawImage(this._bdCache, x, y, drawW, drawH);
   }
 
   _layer(ctx, cam, W, H, L, alphaScale = 1) {

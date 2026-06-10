@@ -10,7 +10,7 @@ const BOSS_CFG = {
   tanuki: { frames: ['tanuki_run', 'tanuki_stand'], w: 60, h: 60, spriteH: 84, name: 'おおだぬき',
             mode: 'ground', speed: 86, chargeMul: 2.1, attack: 'none', jumps: true, hp: 2, tint: '#c98a4a' },
   boar:   { frames: ['boar_0', 'boar_1', 'boar_2'], w: 84, h: 58, spriteH: 76, name: '天城の猪王',
-            mode: 'ground', speed: 104, chargeMul: 2.9, attack: 'none', hp: 3, tint: '#8a5a3a' },
+            mode: 'ground', speed: 94, chargeMul: 2.4, attack: 'none', hp: 3, tint: '#8a5a3a' },
   crab:   { frames: ['boss_crab_0', 'boss_crab_1'], w: 92, h: 64, spriteH: 88, name: 'カニ大将',
             mode: 'ground', speed: 82, chargeMul: 2.4, attack: 'bubble', hp: 4, crowned: true },
   urchin: { frames: ['boss_urchin_0', 'boss_urchin_1'], w: 84, h: 72, spriteH: 92, name: 'ウニ大魔王',
@@ -21,7 +21,7 @@ const BOSS_CFG = {
   // ---- flying divers ----
   cloud:  { frames: ['cloud_0', 'cloud_1', 'cloud_angry'], w: 74, h: 56, spriteH: 70, name: 'さくら雲の主',
             mode: 'fly', speed: 95, attack: 'none', amp: 2.4, freq: 1.1, hp: 3, tint: '#e9d6ff' },
-  gull:   { frames: ['gull_0', 'gull_1', 'gull_2'], w: 78, h: 52, spriteH: 60, name: '大ガラス',
+  gull:   { frames: ['gull_0', 'gull_1', 'gull_2'], w: 78, h: 52, spriteH: 60, name: '大カモメ',
             mode: 'fly', speed: 150, attack: 'none', amp: 2.8, freq: 1.5, hp: 3, tint: '#c8d2e0' },
 };
 
@@ -50,6 +50,7 @@ class Boss extends Entity {
     this.hp = this.maxHp; this.armed = false; this.intro = 0; this.state = 'active';
     this.iframes = 0; this.charging = false; this.dir = -1; this.facing = -1;
     this.vx = 0; this.vy = 0; this.x = this.spawnX; this.y = this.spawnY;
+    this.prevX = this.x; this.prevY = this.y; // no interpolation streak across the teleport
     this.shootT = rand(1.4, 2.4); this.chargeT = rand(2, 3); this.hopT = rand(0.8, 1.6);
   }
   baseSpeed() { return this.cfg.speed + (this.maxHp - this.hp) * 22; }
@@ -163,6 +164,7 @@ class Boss extends Entity {
     if (this.state !== 'active') { player.doBounce(); return; }
     if (this.iframes > 0) { player.doBounce(); return; }
     this.hp--; this.iframes = 1.3; player.doBounce();
+    GAME.hitstop = 0.06; // tiny freeze for impact
     GAME.cam.shake(12, 0.4); GAME.particles.burst(this.cx, this.y);
     GAME.addScore(1500, this.cx, this.y - 30);
     Audio2.sfx('boss'); GAME.bubbleBurst(this.cx, this.cy);
@@ -190,11 +192,13 @@ class Boss extends Entity {
       ctx.save(); ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(this.cx, this.bottom - this.spriteH * 0.4, r, 0, 6.29); ctx.fill(); ctx.restore();
     }
-    const flash = this.iframes > 0 && Math.floor(this.iframes * 12) % 2 === 0;
+    // invulnerable = steady translucency (no strobe); guard so the death tumble
+    // isn't ghosted (iframes stays >0 there and never ticks down)
+    const a = this.state !== 'dead' && this.iframes > 0 ? 0.6 : 1;
     const name = this.anim.frame();
     const meta = Assets.size(name); const h = this.spriteH; const w = h * (meta.w / meta.h);
     const rot = this.state === 'dead' ? (this.spin || 0) : 0;
-    drawSprite(ctx, name, this.cx, this.bottom + 3, { w, h, flip: this.facing > 0, ax: 0.5, ay: 1, rot, alpha: flash ? 0.4 : 1 });
+    drawSprite(ctx, name, this.cx, this.bottom + 3, { w, h, flip: this.facing > 0, ax: 0.5, ay: 1, rot, alpha: a });
     // a little crown for non-crowned bosses
     if (this.armed && this.state !== 'dead' && !this.cfg.crowned) {
       drawSprite(ctx, 'fx_star', this.cx, this.bottom - h + 4, { w: 22, h: 22, ax: 0.5, ay: 0.5, alpha: 0.9 });

@@ -16,8 +16,9 @@ const Input = {
       ArrowRight: 'right', KeyD: 'right',
       ArrowDown: 'down', KeyS: 'down',
       ArrowUp: 'jump', KeyW: 'jump', Space: 'jump', KeyZ: 'jump', KeyJ: 'jump',
+      Enter: 'jump', // Enter acts as "confirm" in menus (jump in-game is harmless)
       ShiftLeft: 'run', ShiftRight: 'run', KeyX: 'run', KeyK: 'run',
-      Escape: 'pause', KeyP: 'pause', Enter: 'pause',
+      Escape: 'pause', KeyP: 'pause',
     };
     addEventListener('keydown', (e) => {
       // don't swallow keys when a top-bar DOM button is focused (Enter/Space activate it)

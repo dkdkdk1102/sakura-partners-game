@@ -4,9 +4,9 @@
    rounded look, scales a little with screen size. */
 
 const HUD = {
-  toast: null, toastT: 0,
+  toast: null, toastT: 0, toastDur: 4,
 
-  showToast(title, body, dur = 4) { this.toast = { title, body }; this.toastT = dur; },
+  showToast(title, body, dur = 4) { this.toast = { title, body }; this.toastT = dur; this.toastDur = dur; },
 
   update(dt) { if (this.toastT > 0) this.toastT -= dt; },
 
@@ -60,7 +60,7 @@ const HUD = {
 
     // ---- toast (trivia from signs) ----
     if (this.toastT > 0 && this.toast) {
-      const a = clamp(this.toastT > 0.5 ? 1 : this.toastT / 0.5, 0, 1) * clamp((5 - this.toastT) / 0.4, 0, 1);
+      const a = clamp(this.toastT > 0.5 ? 1 : this.toastT / 0.5, 0, 1) * clamp((this.toastDur - this.toastT) / 0.4, 0, 1);
       ctx.globalAlpha = a;
       const bw = Math.min(W * 0.7, 560 * s), bx = (W - bw) / 2, by = H - 150 * s, bh = 92 * s;
       ctx.fillStyle = 'rgba(28,22,44,0.86)'; roundRect(ctx, bx, by, bw, bh, 16 * s); ctx.fill();

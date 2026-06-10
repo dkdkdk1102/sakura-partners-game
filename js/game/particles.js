@@ -103,7 +103,13 @@ class Particles {
     this.items = this.items.filter((p) => !p.dead);
     this.texts = this.texts.filter((t) => !t.dead);
   }
-  render(ctx) { for (const p of this.items) p.render(ctx); }
+  render(ctx) {
+    const cam = window.GAME && GAME.cam;
+    for (const p of this.items) {
+      if (cam && (p.x < cam.x - 80 || p.x > cam.x + cam.viewW + 80)) continue; // off-screen cull
+      p.render(ctx);
+    }
+  }
   renderText(ctx) { for (const t of this.texts) t.render(ctx); }
 }
 

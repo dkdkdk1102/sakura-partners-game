@@ -25,6 +25,9 @@ class Camera {
     this.x = tx - this.viewW * 0.4;
     this.y = ty - this.viewH * 0.55;
     this._clamp();
+    // also reset the interpolation history so the render doesn't sweep the
+    // camera across the level for one frame after a respawn/teleport
+    this.prevX = this.x; this.prevY = this.y;
   }
 
   follow(target, dt) {

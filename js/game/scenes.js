@@ -110,7 +110,7 @@ class TitleScene {
     ctx.fillText('あそびかた', W / 2, by + 46);
     ctx.textAlign = 'left'; ctx.fillStyle = '#4a3340'; ctx.font = `600 ${19}px ${FONT}`;
     const lines = [
-      '◆ タッチ：画面左下の ◀ ▶ で移動、右下の ⤴ でジャンプ、🅑 でダッシュ',
+      '◆ タッチ：画面左下の ◀ ▶ で移動、右下の ⤴ でジャンプ、Ｂ でダッシュ',
       '◆ キーボード：← → 移動 / ↑・スペースでジャンプ / Shift ダッシュ',
       '◆ 敵は上から踏むとやっつけられる（トゲのある敵はよけよう）',
       '◆ みかんを集めて100個で1UP、温泉♨でハート回復',
@@ -197,7 +197,7 @@ class StageClearScene {
       ctx.fillStyle = '#5a4450'; ctx.font = `700 ${17}px ${FONT}`;
       let y = by + 112; y = wrapText(ctx, f.tagline, tx, y, bx + bw - tx - 24, 25) + 12;
       ctx.fillStyle = '#6a5560'; ctx.font = `500 ${15}px ${FONT}`;
-      y = wrapText(ctx, '🛈 ' + f.trivia, tx, y, bx + bw - tx - 24, 23) + 8;
+      y = wrapText(ctx, '※ ' + f.trivia, tx, y, bx + bw - tx - 24, 23) + 8;
       if (f.season) { ctx.fillStyle = '#cf7a3a'; ctx.font = `700 ${14}px ${FONT}`; ctx.fillText('◆ 見頃・旬：' + f.season, tx, y + 6); }
     }
     // totals
@@ -250,7 +250,6 @@ class EndingScene {
     const m = new Map();
     for (const p of this.run.properties) { const k = p.name; m.set(k, (m.get(k) || 0) + 1); }
     this.gallery = [...m.entries()].map(([name, n]) => ({ name, n, sprite: (PROPERTIES.find((x) => x.name === name) || PROPERTIES[0]).sprite }));
-    this.ito = (window.IZU_FACTS || []).find((f) => f.id === 'ito_city');
   }
   handleResize(W, H) { this.layout(W, H); }
   layout(W, H) { this.again.setCenter(W / 2, H * 0.94); }

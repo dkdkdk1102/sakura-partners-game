@@ -42,6 +42,12 @@ function drawSprite(ctx, name, x, y, opts = {}) {
   const ay = opts.ay != null ? opts.ay : 1.0; // anchor y (0=top,1=bottom)
   const flip = opts.flip ? -1 : 1;
   const alpha = opts.alpha != null ? opts.alpha : 1;
+  // fast path: no rotation/flip/scale/alpha → a single drawImage, no state churn
+  // (terrain tiles go through here ~100×/frame)
+  if (!opts.rot && !opts.flip && (!opts.scale || opts.scale === 1) && alpha === 1) {
+    ctx.drawImage(img, x - dw * ax, y - dh * ay, dw, dh);
+    return;
+  }
   ctx.save();
   if (alpha !== 1) ctx.globalAlpha *= alpha;
   ctx.translate(x, y);

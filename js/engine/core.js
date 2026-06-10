@@ -67,7 +67,9 @@ const Engine = {
     const ctx = this.ctx;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    // 'medium' keeps mip-filtered downscaling (no shimmer) at a fraction of the
+    // cost of 'high'; the backdrop is pre-resampled at 'high' into its cache
+    ctx.imageSmoothingQuality = 'medium';
     if (this.scene && this.scene.render) this.scene.render(ctx);
   },
 };

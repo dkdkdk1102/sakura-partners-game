@@ -90,6 +90,8 @@ function boar(x, y) {
     const p = GAME.player;
     const near = p && Math.abs(p.cy - e.cy) < TILE * 1.4 && Math.abs(p.cx - e.cx) < TILE * 6;
     if (near && !e.charging) { e.charging = true; e.dir = sign(p.cx - e.cx) || e.dir; }
+    // calm down once the player is well away (charging used to stick forever)
+    if (e.charging && (!p || Math.abs(p.cx - e.cx) > TILE * 10)) e.charging = false;
     const sp = e.charging ? 230 : 70;
     e.walk(dt, map, sp);
     if (e.charging && e.onGround && Math.random() < 0.3) GAME.particles.dust(e.cx - e.dir * 20, e.bottom);
