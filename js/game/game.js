@@ -376,6 +376,18 @@ class GameScene {
 
     HUD.render(ctx, W, H, this);
 
+    // attract-mode banner (gentle sine pulse, no strobe)
+    if (this.run && this.run.demo) {
+      const a = 0.75 + 0.18 * Math.sin(Engine.time * 2.2);
+      ctx.save(); ctx.textAlign = 'center';
+      ctx.font = `900 ${Math.min(34, W * 0.045)}px ${FONT}`;
+      ctx.lineWidth = 8; ctx.strokeStyle = `rgba(255,255,255,${a.toFixed(2)})`;
+      ctx.strokeText('▶ デモプレイちゅう — タッチして あそぶ！', W / 2, H * 0.88);
+      ctx.fillStyle = `rgba(230,60,110,${a.toFixed(2)})`;
+      ctx.fillText('▶ デモプレイちゅう — タッチして あそぶ！', W / 2, H * 0.88);
+      ctx.restore();
+    }
+
     if (this.paused) this._renderPause(ctx, W, H);
     else if (this.state === 'cleared') this._renderClear(ctx, W, H);
     else if (this.state === 'gameover') this._renderGameOver(ctx, W, H);

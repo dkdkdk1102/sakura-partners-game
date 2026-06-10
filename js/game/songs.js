@@ -53,6 +53,6 @@ const SONGS = {
   },
 };
 
-const THEME_SONG = { spring: 'field', mountain: 'mountain', coast: 'coast', volcano: 'field', town: 'town' };
+const THEME_SONG = { spring: 'field', mountain: 'mountain', coast: 'coast', volcano: 'field', town: 'town', port: 'coast' };
 
 window.SONGS = SONGS; window.THEME_SONG = THEME_SONG;

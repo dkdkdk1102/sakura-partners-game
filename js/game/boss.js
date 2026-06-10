@@ -23,6 +23,8 @@ const BOSS_CFG = {
             mode: 'fly', speed: 95, attack: 'none', amp: 2.4, freq: 1.1, hp: 3, tint: '#e9d6ff' },
   gull:   { frames: ['gull_0', 'gull_1', 'gull_2'], w: 78, h: 52, spriteH: 60, name: '大カモメ',
             mode: 'fly', speed: 150, attack: 'none', amp: 2.8, freq: 1.5, hp: 3, tint: '#c8d2e0' },
+  serpent:{ frames: ['serpent_0', 'serpent_1', 'serpent_2', 'serpent_3'], w: 76, h: 64, spriteH: 88, name: '港のウミヘビ',
+            mode: 'fly', speed: 110, attack: 'bubble', amp: 2.0, freq: 1.3, hp: 3, tint: '#5aa8d8' },
 };
 
 class Boss extends Entity {

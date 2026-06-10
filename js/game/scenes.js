@@ -53,10 +53,12 @@ class BootScene {
 // ---------------------------------------------------------------------------
 class TitleScene {
   enter() {
-    this.t = 0; this.showHelp = false;
+    this.t = 0; this.showHelp = false; this.idleT = 0; this.attractAfter = 30;
     this.start = new Button('はじめる', 0, 0, 300, 76, { color: '#ff8bb0', size: 30 });
-    this.help = new Button('あそびかた', 0, 0, 200, 54, { color: '#9fd3ff', size: 20 });
-    this.sound = new Button('♪ 音 ON', 0, 0, 200, 54, { color: '#ffd06b', size: 20 });
+    this.help = new Button('あそびかた', 0, 0, 196, 52, { color: '#9fd3ff', size: 19 });
+    this.sound = new Button('♪ 音 ON', 0, 0, 196, 52, { color: '#ffd06b', size: 19 });
+    this.rank = new Button('ランキング', 0, 0, 196, 52, { color: '#cdb9ff', size: 19 });
+    this.mini = new Button('ミニゲーム', 0, 0, 196, 52, { color: '#a4e6b8', size: 19 });
     this.layout(Engine.W, Engine.H);
     // main-screen BGM = the MP3 playlist (random, auto-advancing); no synth here
     Audio2.ensure(); Audio2.stopSong();
@@ -66,17 +68,26 @@ class TitleScene {
   exit() { Input.onGesture = null; }
   handleResize(W, H) { this.layout(W, H); }
   layout(W, H) {
-    this.start.setCenter(W / 2, H * 0.62);
-    this.help.setCenter(W / 2 - 110, H * 0.78);
-    this.sound.setCenter(W / 2 + 110, H * 0.78);
+    this.start.setCenter(W / 2, H * 0.6);
+    this.help.setCenter(W / 2 - 105, H * 0.745);
+    this.sound.setCenter(W / 2 + 105, H * 0.745);
+    this.rank.setCenter(W / 2 - 105, H * 0.865);
+    this.mini.setCenter(W / 2 + 105, H * 0.865);
   }
   update(dt) {
     this.t += dt; petalsUpdate(dt, Engine.W);
+    // attract mode: idle on the title for a while → autoplay demo
+    this.idleT += dt;
+    if (Input.state.any || Pointer.down || Pointer.tap) this.idleT = 0;
+    if (this.idleT > this.attractAfter && window.DEMO && !DEMO.active) { DEMO.start(); return; }
     const tap = Pointer.consume();
+    if (this.t < 0.35) return; // swallow the input that woke us from the demo
     if (this.showHelp) { if (tap || Input.pressed('jump') || Input.pressed('pause')) { this.showHelp = false; Audio2.sfx('select'); } return; }
     if ((tap && this.start.contains(tap)) || Input.pressed('jump') || Input.pressed('pause')) { Audio2.sfx('confirm'); Engine.setScene(new DifficultyScene()); return; }
     if (tap && this.help.contains(tap)) { this.showHelp = true; Audio2.sfx('select'); }
     if (tap && this.sound.contains(tap)) { const m = Audio2.toggleMute(); this.sound.label = m ? '🔇 音 OFF' : '♪ 音 ON'; Audio2.sfx('select'); }
+    if (tap && this.rank.contains(tap)) { Audio2.sfx('confirm'); Engine.setScene(new RankingScene()); }
+    if (tap && this.mini.contains(tap)) { Audio2.sfx('confirm'); Engine.setScene(new MiniMenuScene()); }
   }
   render(ctx) {
     const W = Engine.W, H = Engine.H;
@@ -98,6 +109,7 @@ class TitleScene {
     ctx.fillStyle = '#5a3a66'; ctx.fillText('〜 うさぎと、伊東をめざして 〜', W / 2, H * 0.285);
     ctx.restore();
     this.start.draw(ctx, this.t); this.help.draw(ctx); this.sound.draw(ctx);
+    this.rank.draw(ctx); this.mini.draw(ctx);
     ctx.fillStyle = 'rgba(90,60,80,0.7)'; ctx.font = `600 ${14}px ${FONT}`;
     ctx.fillText('presented by サクラパートナーズ', W / 2, H - 18);
     if (this.showHelp) this._help(ctx, W, H);
@@ -219,14 +231,20 @@ class GameOverScene {
   }
   handleResize(W, H) { this.layout(W, H); }
   layout(W, H) { this.retry.setCenter(W / 2, H * 0.52); this.title.setCenter(W / 2, H * 0.66); }
+  _toTitle() {
+    Audio2.sfx('select');
+    // even a game-over run can make the in-store ranking
+    if (window.Ranking && Ranking.qualifies(this.run.score)) Engine.setScene(new NameEntryScene(this.run));
+    else Engine.setScene(new TitleScene());
+  }
   update(dt) {
     this.t += dt;
     // keyboard fallback: jump = もういちど, pause = タイトルへ
     if (Input.pressed('jump')) { Audio2.sfx('confirm'); Campaign.retry(); return; }
-    if (Input.pressed('pause')) { Audio2.sfx('select'); Engine.setScene(new TitleScene()); return; }
+    if (Input.pressed('pause')) { this._toTitle(); return; }
     const tap = Pointer.consume(); if (!tap) return;
     if (this.retry.contains(tap)) { Audio2.sfx('confirm'); Campaign.retry(); }
-    else if (this.title.contains(tap)) { Audio2.sfx('select'); Engine.setScene(new TitleScene()); }
+    else if (this.title.contains(tap)) { this._toTitle(); }
   }
   render(ctx) {
     const W = Engine.W, H = Engine.H;
@@ -256,7 +274,12 @@ class EndingScene {
   update(dt) {
     this.t += dt; petalsUpdate(dt, Engine.W);
     const tap = Pointer.consume();
-    if (this.t > 1 && ((tap && this.again.contains(tap)) || Input.pressed('pause') || Input.pressed('jump'))) { Audio2.sfx('confirm'); Engine.setScene(new TitleScene()); }
+    if (this.t > 1 && ((tap && this.again.contains(tap)) || Input.pressed('pause') || Input.pressed('jump'))) {
+      Audio2.sfx('confirm');
+      // high score? → name entry → ranking board
+      if (window.Ranking && Ranking.qualifies(this.run.score)) Engine.setScene(new NameEntryScene(this.run));
+      else Engine.setScene(new TitleScene());
+    }
   }
   render(ctx) {
     const W = Engine.W, H = Engine.H;

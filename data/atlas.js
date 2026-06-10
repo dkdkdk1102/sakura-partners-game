@@ -712,6 +712,26 @@ window.ATLAS = {
   "w": 182,
   "h": 128
  },
+ "basket": {
+  "w": 84,
+  "h": 91
+ },
+ "rod": {
+  "w": 139,
+  "h": 126
+ },
+ "fishnet": {
+  "w": 123,
+  "h": 116
+ },
+ "fish_bucket": {
+  "w": 84,
+  "h": 106
+ },
+ "float_buoy": {
+  "w": 67,
+  "h": 141
+ },
  "fx_dust": {
   "w": 86,
   "h": 54
@@ -780,9 +800,73 @@ window.ATLAS = {
   "w": 1280,
   "h": 720
  },
+ "bg_shimoda": {
+  "w": 1280,
+  "h": 720
+ },
  "goal_sakura_partners": {
   "w": 240,
   "h": 164
+ },
+ "black_ship": {
+  "w": 500,
+  "h": 350
+ },
+ "namako_kura": {
+  "w": 400,
+  "h": 400
+ },
+ "gas_lamp": {
+  "w": 200,
+  "h": 350
+ },
+ "willow_tree": {
+  "w": 200,
+  "h": 350
+ },
+ "fish_aji": {
+  "w": 387,
+  "h": 229
+ },
+ "fish_saba": {
+  "w": 400,
+  "h": 224
+ },
+ "fish_kamasu": {
+  "w": 400,
+  "h": 173
+ },
+ "fish_mejina": {
+  "w": 378,
+  "h": 286
+ },
+ "fish_kasago": {
+  "w": 381,
+  "h": 253
+ },
+ "fish_isaki": {
+  "w": 391,
+  "h": 246
+ },
+ "fish_madai": {
+  "w": 386,
+  "h": 278
+ },
+ "fish_aori_ika": {
+  "w": 371,
+  "h": 286
+ },
+ "fish_takabe": {
+  "w": 387,
+  "h": 226
+ },
+ "fish_kinmedai": {
+  "w": 372,
+  "h": 266
+ },
+ "fish_nushi_giant_kinmedai": {
+  "w": 400,
+  "h": 329
  },
  "t_dirt": {
   "w": 94,

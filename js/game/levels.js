@@ -108,7 +108,57 @@ const LEVELS = [
     },
   },
 
-  // ===== 4. 城ヶ崎海岸 =====================================================
+  // ===== 4. 下田・ペリーロード ==============================================
+  {
+    name: '下田ペリーロード', sub: 'しもだ・下田市', theme: 'port', backdrop: 'bg_shimoda', cols: 112,
+    factId: 'shimoda', clearSprite: 'black_ship',
+    build(b) {
+      // stone-paved canal town: namako-kabe storehouses, willows, gas lamps, and
+      // the black ship at the docks. Two gentle 2-tile canal hops, otherwise flat.
+      b.startAt(3);
+      b.ground(0, 40);
+      b.sign(6, 'shimoda');
+      b.decor('namako_kura', 10, GROUND, { scale: 0.5 });
+      b.decor('willow_tree', 15, GROUND, { scale: 0.42, fg: true });
+      b.decor('gas_lamp', 19, GROUND, { scale: 0.32 });
+      b.npc('woman', 12); b.npc('cat', 23);
+      b.coinRow(13, 5, GROUND - 2);
+      b.enemy('crab', 17); b.enemy('snail', 26);
+      b.qbox(21, GROUND - 3, 'mikan', 3);
+      b.decor('namako_kura', 28, GROUND, { scale: 0.55 });
+      b.decor('gas_lamp', 33, GROUND, { scale: 0.32 });
+      b.checkpoint(36);
+      // canal hop #1 (2 tiles) onto the dock boards — keep the hop itself safe,
+      // the jelly floats further in over solid ground
+      b.ground(42, 68);
+      b.coinArc(43, GROUND - 3, 4);
+      b.flyer('jelly', 46, (GROUND - 3) * TILE);
+      // the docks: black ship moored in the bay, plank walkways
+      b.decor('black_ship', 56, GROUND, { scale: 0.55 });
+      b.plat(48, 53, GROUND - 3, true); b.coinRow(48, 4, GROUND - 4); b.prop(50, GROUND - 4, 0);
+      b.flyer('gull', 52, (GROUND - 6) * TILE, { range: TILE * 4 });
+      b.enemy('crab', 60); b.hazard('coral', 64, GROUND);
+      b.qbox(58, GROUND - 3, 'onsen', 1);
+      // canal hop #2, then the lamp-lined promenade
+      b.ground(70, 96);
+      b.coinArc(70, GROUND - 3, 4);
+      b.decor('willow_tree', 74, GROUND, { scale: 0.42, fg: true });
+      b.decor('gas_lamp', 79, GROUND, { scale: 0.32 });
+      b.decor('namako_kura', 85, GROUND, { scale: 0.5 });
+      b.enemy('snail', 78); b.enemy('crab', 88);
+      b.spring(82, GROUND); b.plat(84, 88, GROUND - 4, true); b.prop(86, GROUND - 5, 2);
+      b.coinArc(84, GROUND - 6, 4);
+      b.npc('fisher', 92);
+      b.checkpoint(94);
+      // harbor boss: the sea serpent guards the bay
+      b.ground(96, 112);
+      b.decor('gas_lamp', 98, GROUND, { scale: 0.32 });
+      b.addBoss('serpent', 104, 3);
+      b.setGoal(109, 'flag');
+    },
+  },
+
+  // ===== 5. 城ヶ崎海岸 =====================================================
   {
     name: '城ヶ崎海岸', sub: 'じょうがさき・伊東市', theme: 'coast', backdrop: 'bg_jogasaki', cols: 120,
     factId: 'jogasaki', clearSprite: 'l_lighthouse2',

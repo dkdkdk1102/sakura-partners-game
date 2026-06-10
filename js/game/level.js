@@ -31,6 +31,12 @@ const THEMES = {
     mid: { name: 'd_bush', scale: 1.6, gap: 4, baseY: 0.88, factor: 0.5, alpha: 0.95 },
     clouds: true, ambiance: null, sea: false,
   },
+  port: { // 下田・ペリーロード（石畳の港町）
+    sky: ['#9fd8ff', '#eaf6ff'], tiles: { top: 't_stone', fill: 't_stone_fill', oneway: 't_wood' },
+    far: { name: 'l_lighthouse', scale: 2.0, gap: 12, baseY: 0.68, factor: 0.28, alpha: 0.9 },
+    mid: { name: 'l_rockisle', scale: 1.6, gap: 6, baseY: 0.74, factor: 0.5, alpha: 0.9 },
+    clouds: true, ambiance: 'bubble', sea: true,
+  },
   town: {
     sky: ['#ffd7a8', '#ffe9c7'], tiles: { top: 't_stone', fill: 't_stone_fill', oneway: 't_wood' },
     far: { name: 'ryokan', scale: 2.2, gap: 7, baseY: 0.8, factor: 0.3, alpha: 0.95 },
