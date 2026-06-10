@@ -83,6 +83,15 @@ const Audio2 = {
                      this.noise({ dur: 0.3, vol: 0.25, hp: 200 }); break;
       case 'clear':  [72, 76, 79, 84].forEach((m, i) =>
                        this.tone({ freq: this.midi(m), dur: 0.2, type: 'square', vol: 0.45, when: i * 0.13 })); break;
+      // ---- shooter sfx ----
+      case 'shot':   this.tone({ freq: 880, slideTo: 520, dur: 0.05, type: 'square', vol: 0.13 }); break;
+      case 'tink':   this.tone({ freq: 1320, slideTo: 990, dur: 0.04, type: 'square', vol: 0.18 }); break;
+      case 'blip':   this.tone({ freq: 340, slideTo: 220, dur: 0.08, type: 'sawtooth', vol: 0.16 }); break;
+      case 'boom':   this.noise({ dur: 0.28, vol: 0.32, hp: 220 });
+                     this.tone({ freq: 130, slideTo: 50, dur: 0.3, type: 'sawtooth', vol: 0.3 }); break;
+      case 'bomb':   this.noise({ dur: 0.5, vol: 0.4, hp: 120 });
+                     this.tone({ freq: 90, slideTo: 36, dur: 0.6, type: 'sawtooth', vol: 0.4 });
+                     this.tone({ freq: 600, slideTo: 1400, dur: 0.4, type: 'sine', vol: 0.25 }); break;
     }
   },
 

@@ -27,6 +27,9 @@ class Player extends Entity {
     this.accel = 2600; this.airAccel = 1700; this.friction = 2400;
     this.jumpVel = 940; this.gravity = 2600; this.maxFall = 1500;
     this.coyote = 0; this.buffer = 0; this.jumpHeld = false; this.jumping = false;
+    this.airJumps = 1;           // ふんわり二段ジャンプ
+    this.trail = [];             // run afterimages [{x,y,frame,facing}]
+    this.trailT = 0;
     this.crouching = false;
     this.iframes = 0;       // invincibility timer after a hit
     this.hurtLock = 0;      // brief control lock + knockback
@@ -63,14 +66,20 @@ class Player extends Entity {
       this.dropTimer = 0.16; this.onGround = false; this.coyote = 0; this.buffer = 0;
     }
 
-    // ---- jump (coyote + buffer + variable height) ----
+    // ---- jump (coyote + buffer + variable height + a gentle double jump) ----
     this.coyote = this.onGround ? 0.1 : Math.max(0, this.coyote - dt);
+    if (this.onGround) this.airJumps = 1;
     if (ctrl && Input.pressed('jump')) this.buffer = 0.12; else this.buffer = Math.max(0, this.buffer - dt);
     if (this.buffer > 0 && this.coyote > 0 && !this.crouching) {
       this.vy = -this.jumpVel; this.jumping = true; this.coyote = 0; this.buffer = 0;
       this.onGround = false;
       GAME.dust(this.cx, this.bottom);
       Audio2.sfx('jump');
+    } else if (this.buffer > 0 && !this.onGround && this.coyote <= 0 && this.airJumps > 0 && this.dropTimer <= 0) {
+      // double jump: smaller hop, a puff of petals instead of dust
+      this.vy = -this.jumpVel * 0.84; this.jumping = true; this.buffer = 0; this.airJumps--;
+      GAME.particles.sparkle(this.cx, this.bottom, 'fx_petal0', 5);
+      Audio2.sfx('bigjump');
     }
     if (this.jumping && !In.jump && this.vy < 0) { this.vy *= 0.42; this.jumping = false; } // variable jump
     if (this.vy >= 0) this.jumping = false;
@@ -82,6 +91,25 @@ class Player extends Entity {
 
     this._animate();
     this.anim.update(dt);
+
+    // run afterimages (steady alpha ghosts — no flicker)
+    this.trailT -= dt;
+    if (Math.abs(this.vx) > this.walkSpeed + 40 && this.trailT <= 0) {
+      this.trailT = 0.05;
+      this.trail.push({ x: this.cx, y: this.bottom, frame: this.anim.frame(), facing: this.facing, t: 0 });
+    }
+    for (const g of this.trail) g.t += dt;
+    this.trail = this.trail.filter((g) => g.t < 0.22);
+  }
+
+  renderTrail(ctx) {
+    for (const g of this.trail) {
+      if (!g.frame) continue;
+      const a = 0.22 * (1 - g.t / 0.22);
+      const meta = Assets.size(g.frame);
+      const h = this.spriteH, w = h * (meta.w / meta.h);
+      drawSprite(ctx, g.frame, g.x, g.y + 2, { w, h, flip: g.facing < 0, ax: 0.5, ay: 1, alpha: a });
+    }
   }
 
   _animate() {

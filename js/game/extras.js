@@ -2,11 +2,7 @@
    name entry, attract/demo mode (idle title → autoplay), and the onsen-manju
    catch minigame. Loaded after scenes.js (uses Button/drawScenicBg/GameScene). */
 
-// ---- safe persistent storage (works on Pages; degrades silently on file://) --
-const Store = {
-  get(k, def) { try { const v = localStorage.getItem('spg_' + k); return v ? JSON.parse(v) : def; } catch (e) { return def; } },
-  set(k, v) { try { localStorage.setItem('spg_' + k, JSON.stringify(v)); } catch (e) {} },
-};
+// (Store lives in engine/store.js — shared with the shooter)
 
 // ---- ranking ----------------------------------------------------------------
 const Ranking = {
@@ -352,6 +348,6 @@ class MiniMenuScene {
   }
 }
 
-window.Store = Store; window.Ranking = Ranking;
+window.Ranking = Ranking;
 window.NameEntryScene = NameEntryScene; window.RankingScene = RankingScene;
 window.DEMO = DEMO; window.ManjuScene = ManjuScene; window.MiniMenuScene = MiniMenuScene;

@@ -15,6 +15,10 @@ const HUD = {
     ctx.save();
     ctx.textBaseline = 'middle';
 
+    // translucent panel keeps the top-left cluster readable on busy backdrops
+    ctx.fillStyle = 'rgba(20,26,44,0.34)';
+    roundRect(ctx, 8 * s, 10 * s, 214 * s, 122 * s, 14 * s); ctx.fill();
+
     // ---- hearts + lives (top-left) ----
     const pad = 16 * s, hx = pad, hy = pad + 6 * s, hs = 30 * s;
     for (let i = 0; i < g.maxHearts; i++) {

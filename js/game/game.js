@@ -51,6 +51,7 @@ class GameScene {
 
     this.state = 'play'; this.paused = false; this.clearT = 0; this.gameoverT = 0;
     this.bossCleared = false; this.bossClearTimer = 0; this.hitstop = 0;
+    this.stompCombo = 0; this.clearBonusM = 0; this.clearBonusL = 0;
     this.stageNum = this.run.stageIndex + 1; this.stageName = def.name; this.stageSub = def.sub;
     this.stageBannerT = 3; this.ambT = 0; this.flash = 0;
     this._buttons();
@@ -114,9 +115,23 @@ class GameScene {
     if (this.state !== 'play') return;
     this.state = 'cleared'; this.clearT = 0; this.player.win();
     Audio2.stopSong(); Audio2.sfx('clear');
-    // tally bonuses
-    this.clearBonus = { mikan: this.mikan, time: 0, lives: this.lives };
+    // clear bonuses: mikan ×20, spare lives ×300
+    this.clearBonusM = this.mikan * 20;
+    this.clearBonusL = this.lives * 300;
+    this.score += this.clearBonusM + this.clearBonusL;
     this.particles.burst(this.player.cx, this.player.cy - 20);
+    for (let i = 0; i < 14; i++) this.particles.petal(this.player.cx + rand(-160, 160), this.player.y - rand(60, 220));
+  }
+  // chained stomps without landing multiply the fun
+  stompChain(x, y, baseScore) {
+    this.stompCombo++;
+    if (this.stompCombo >= 2) {
+      const mult = Math.min(this.stompCombo, 8);
+      const bonus = (baseScore || 100) * (mult - 1);
+      this.score += bonus;
+      this.particles.text(x, y - 48, `×${mult}！`, '#7fd0ff');
+      Audio2.tone({ freq: 420 + mult * 110, dur: 0.1, type: 'square', vol: 0.35 });
+    }
   }
   onBossActivated(boss) {
     Audio2.playSong(SONGS.boss);
@@ -225,7 +240,10 @@ class GameScene {
 
     // landing dust — only on a genuine fall (gated by impact speed), so resting
     // or tiny steps never puff
-    if (p.onGround && !p.wasOnGround && p.state === 'play' && p.landImpact > 420) this.particles.landDust(p.cx, p.bottom);
+    if (p.onGround && !p.wasOnGround && p.state === 'play') {
+      this.stompCombo = 0; // landing ends the stomp chain
+      if (p.landImpact > 420) this.particles.landDust(p.cx, p.bottom);
+    }
   }
 
   _near(e, d) { return Math.abs((e.cx != null ? e.cx : e.x) - this.player.cx) < d; }
@@ -276,7 +294,7 @@ class GameScene {
         if (e.defeated || e.remove) continue;
         if (!aabb(pb.x, pb.y, pb.w, pb.h, e.x, e.y, e.w, e.h)) continue;
         const stomp = p.vy > 40 && (prevBottom - e.y) < e.h * 0.6;
-        if (stomp && e.stompable && !e.spiky) { e.defeat(true); p.doBounce(); this.particles.sparkle(e.cx, e.y, 'fx_star', 5); }
+        if (stomp && e.stompable && !e.spiky) { e.defeat(true); p.doBounce(); this.particles.sparkle(e.cx, e.y, 'fx_star', 5); this.stompChain(e.cx, e.y, e.score); }
         else p.hurt(e.cx);
       }
       // hazards
@@ -292,7 +310,7 @@ class GameScene {
       // boss (only once it has woken up)
       if (this.boss && this.boss.armed && this.boss.state !== 'dead' && aabb(pb.x, pb.y, pb.w, pb.h, this.boss.x, this.boss.y, this.boss.w, this.boss.h)) {
         const stomp = p.vy > 40 && (prevBottom - this.boss.y) < this.boss.h * 0.55;
-        if (stomp) this.boss.onStomp(p);
+        if (stomp) { this.boss.onStomp(p); this.stompChain(this.boss.cx, this.boss.y, 300); }
         // while the boss reels from a stomp (iframes), contact is harmless —
         // otherwise the player still overlapping on the bounce-up took damage
         else if (this.boss.iframes <= 0) p.hurt(this.boss.cx);
@@ -356,6 +374,10 @@ class GameScene {
     for (const d of this.bgDecor) if (this._inView(d.x, 400)) this._decor(ctx, d);
     this.map.render(ctx, cam);
     for (const blk of this.map.blocks.values()) { const wx = blk.x; if (this._inView(wx, 200)) blk.render(ctx); }
+    // soft blob shadows ground the characters
+    for (const e of this.enemies) if (!e.defeated && this._inView(e.cx, 200)) this._shadow(ctx, e.cx, e.bottom, e.w);
+    if (this.boss && this.boss.state !== 'dead') this._shadow(ctx, this.boss.cx, this.boss.bottom, this.boss.w);
+    if (this.player.state !== 'dead') this._shadow(ctx, this.player.cx, this.player.bottom, this.player.w * 1.3);
     for (const s of this.springs) if (this._inView(s.x, 200)) s.render(ctx);
     for (const c of this.checkpoints) if (this._inView(c.x, 300)) c.render(ctx);
     for (const n of this.npcs) if (this._inView(n.x, 300)) this._npc(ctx, n);
@@ -365,6 +387,7 @@ class GameScene {
     for (const e of this.enemies) if (this._inView(e.cx, 200)) this._drawI(ctx, e, A, () => e.render(ctx));
     if (this.boss) this._drawI(ctx, this.boss, A, () => this.boss.render(ctx));
     for (const pr of this.projectiles) this._drawI(ctx, pr, A, () => pr.render(ctx));
+    this.player.renderTrail && this.player.renderTrail(ctx);
     this._drawI(ctx, this.player, A, () => this.player.render(ctx));
     this.particles.render(ctx);
     for (const d of this.fgDecor) if (this._inView(d.x, 400)) this._decor(ctx, d);
@@ -394,6 +417,21 @@ class GameScene {
   }
 
   _inView(wx, m) { return wx > this.cam.x - m && wx < this.cam.x + this.cam.viewW + m; }
+  // project a soft elliptical shadow onto the first ground below (max 7 tiles)
+  _shadow(ctx, cx, bottom, w) {
+    const tx = Math.floor(cx / TILE);
+    let ty = Math.floor((bottom + 2) / TILE), gy = null;
+    for (let i = 0; i < 7; i++) {
+      if (this.map.isSolid(tx, ty + i) || this.map.isOneWay(tx, ty + i)) { gy = (ty + i) * TILE; break; }
+    }
+    if (gy == null) return;
+    const dist = Math.max(0, gy - bottom);
+    const k = clamp(1 - dist / (TILE * 5), 0.25, 1);
+    ctx.save();
+    ctx.fillStyle = `rgba(20,16,30,${(0.18 * k).toFixed(3)})`;
+    ctx.beginPath(); ctx.ellipse(cx, gy + 5, (w * 0.62) * k + 6, 7 * k + 2, 0, 0, 6.29); ctx.fill();
+    ctx.restore();
+  }
   _decor(ctx, d) {
     const meta = Assets.size(d.name);
     drawSprite(ctx, d.name, d.x, d.y, { w: meta.w * d.scale, h: meta.h * d.scale, ax: d.ax, ay: d.ay, alpha: d.alpha });
@@ -418,9 +456,13 @@ class GameScene {
     if (this.clearT < 0.6) return;
     ctx.textAlign = 'center';
     ctx.fillStyle = '#ffe066'; ctx.font = `800 ${52}px ${FONT}`;
-    ctx.fillText('クリア！', W / 2, H * 0.4);
+    ctx.fillText('クリア！', W / 2, H * 0.36);
     ctx.fillStyle = '#fff'; ctx.font = `700 ${24}px ${FONT}`;
-    ctx.fillText(`${this.stageName} を こえた！`, W / 2, H * 0.5);
+    ctx.fillText(`${this.stageName} を こえた！`, W / 2, H * 0.46);
+    if (this.clearT > 0.8) {
+      ctx.font = `700 ${19}px ${FONT}`; ctx.fillStyle = '#ffd84a';
+      ctx.fillText(`みかんボーナス +${fmt(this.clearBonusM)}　ざんきボーナス +${fmt(this.clearBonusL)}`, W / 2, H * 0.54);
+    }
     { const pa = (0.65 + 0.2 * Math.sin(this.clearT * 2.5)).toFixed(2); ctx.font = `600 ${18}px ${FONT}`; ctx.fillStyle = `rgba(255,255,255,${pa})`; ctx.fillText('タップ / ジャンプで つぎへ', W / 2, H * 0.62); }
   }
   _renderGameOver(ctx, W, H) {

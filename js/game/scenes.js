@@ -54,7 +54,8 @@ class BootScene {
 class TitleScene {
   enter() {
     this.t = 0; this.showHelp = false; this.idleT = 0; this.attractAfter = 30;
-    this.start = new Button('はじめる', 0, 0, 300, 76, { color: '#ff8bb0', size: 30 });
+    this.start = new Button('ぼうけんを はじめる', 0, 0, 264, 72, { color: '#ff8bb0', size: 23 });
+    this.shooter = new Button('🚀 シューティング', 0, 0, 264, 72, { color: '#7fd0ff', size: 22, text: '#16324a' });
     this.help = new Button('あそびかた', 0, 0, 196, 52, { color: '#9fd3ff', size: 19 });
     this.sound = new Button('♪ 音 ON', 0, 0, 196, 52, { color: '#ffd06b', size: 19 });
     this.rank = new Button('ランキング', 0, 0, 196, 52, { color: '#cdb9ff', size: 19 });
@@ -68,7 +69,9 @@ class TitleScene {
   exit() { Input.onGesture = null; }
   handleResize(W, H) { this.layout(W, H); }
   layout(W, H) {
-    this.start.setCenter(W / 2, H * 0.6);
+    const off = Math.min(142, W * 0.18);
+    this.start.setCenter(W / 2 - off, H * 0.6);
+    this.shooter.setCenter(W / 2 + off, H * 0.6);
     this.help.setCenter(W / 2 - 105, H * 0.745);
     this.sound.setCenter(W / 2 + 105, H * 0.745);
     this.rank.setCenter(W / 2 - 105, H * 0.865);
@@ -88,6 +91,7 @@ class TitleScene {
     if (tap && this.sound.contains(tap)) { const m = Audio2.toggleMute(); this.sound.label = m ? '🔇 音 OFF' : '♪ 音 ON'; Audio2.sfx('select'); }
     if (tap && this.rank.contains(tap)) { Audio2.sfx('confirm'); Engine.setScene(new RankingScene()); }
     if (tap && this.mini.contains(tap)) { Audio2.sfx('confirm'); Engine.setScene(new MiniMenuScene()); }
+    if (tap && this.shooter.contains(tap)) { location.href = 'shooter.html'; }
   }
   render(ctx) {
     const W = Engine.W, H = Engine.H;
@@ -108,7 +112,7 @@ class TitleScene {
     ctx.lineWidth = 7; ctx.strokeStyle = '#fff'; ctx.strokeText('〜 うさぎと、伊東をめざして 〜', W / 2, H * 0.285);
     ctx.fillStyle = '#5a3a66'; ctx.fillText('〜 うさぎと、伊東をめざして 〜', W / 2, H * 0.285);
     ctx.restore();
-    this.start.draw(ctx, this.t); this.help.draw(ctx); this.sound.draw(ctx);
+    this.start.draw(ctx, this.t); this.shooter.draw(ctx); this.help.draw(ctx); this.sound.draw(ctx);
     this.rank.draw(ctx); this.mini.draw(ctx);
     ctx.fillStyle = 'rgba(90,60,80,0.7)'; ctx.font = `600 ${14}px ${FONT}`;
     ctx.fillText('presented by サクラパートナーズ', W / 2, H - 18);
@@ -370,15 +374,8 @@ const Campaign = {
   retry() { this.startStage(this.current); },
 };
 
-// helper used by several scenes
-function wrapText(ctx, text, x, y, maxW, lh, centered) {
-  let line = '', yy = y; const lines = [];
-  for (const ch of text) { if (ctx.measureText(line + ch).width > maxW && line) { lines.push(line); line = ch; } else line += ch; }
-  if (line) lines.push(line);
-  for (const l of lines) { ctx.fillText(l, x, yy); yy += lh; }
-  return yy;
-}
+// (wrapText moved to engine/util.js — shared with the shooter)
 
 window.BootScene = BootScene; window.TitleScene = TitleScene; window.DifficultyScene = DifficultyScene;
 window.StageClearScene = StageClearScene; window.GameOverScene = GameOverScene; window.EndingScene = EndingScene;
-window.Campaign = Campaign; window.wrapText = wrapText; window.drawScenicBg = drawScenicBg;
+window.Campaign = Campaign; window.drawScenicBg = drawScenicBg;

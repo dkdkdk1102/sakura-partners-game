@@ -12,8 +12,10 @@ const Pointer = {
       if (Input) Input._gesture && Input._gesture();
     });
     canvas.addEventListener('pointermove', (e) => { const p = pos(e); this.x = p.x; this.y = p.y; });
-    canvas.addEventListener('pointerup', () => { this.down = false; });
-    canvas.addEventListener('pointercancel', () => { this.down = false; });
+    // release on window so a mouse-up over a DOM button / outside the window
+    // can't leave down=true stuck (which made the ship follow the bare cursor)
+    addEventListener('pointerup', () => { this.down = false; });
+    addEventListener('pointercancel', () => { this.down = false; });
   },
   consume() { const t = this.tap; this.tap = null; return t; },
 };

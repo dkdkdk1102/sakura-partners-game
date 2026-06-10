@@ -46,4 +46,13 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-window.TILE = TILE; window.FONT = FONT; window.roundRect = roundRect;
+// wrap CJK text to a max width; returns the y after the last line
+function wrapText(ctx, text, x, y, maxW, lh, centered) {
+  let line = '', yy = y; const lines = [];
+  for (const ch of text) { if (ctx.measureText(line + ch).width > maxW && line) { lines.push(line); line = ch; } else line += ch; }
+  if (line) lines.push(line);
+  for (const l of lines) { ctx.fillText(l, x, yy); yy += lh; }
+  return yy;
+}
+
+window.TILE = TILE; window.FONT = FONT; window.roundRect = roundRect; window.wrapText = wrapText;

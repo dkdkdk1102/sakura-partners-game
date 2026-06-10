@@ -37,6 +37,13 @@ class Collectible {
       this.x += this.vx * dt; this.y += this.vy * dt;
       const ty = Math.floor((this.y + this.h / 2) / TILE), tx = Math.floor(this.x / TILE);
       if (map.isSolid(tx, ty) && this.vy > 0) { this.y = ty * TILE - this.h / 2; this.vy = 0; this.vx *= 0.7; this.physics = Math.abs(this.vx) > 4; this.baseY = this.y; }
+    } else {
+      // mikan magnet: nearby collectibles drift to the player (feels great)
+      const p = window.GAME && GAME.player;
+      if (p && p.state === 'play') {
+        const d = Math.hypot(p.cx - this.x, p.cy - this.y);
+        if (d < TILE * 1.9) { const k = 6 * dt; this.x += (p.cx - this.x) * k; this.y += (p.cy - this.y) * k; }
+      }
     }
   }
   render(ctx) {
@@ -179,6 +186,7 @@ class Checkpoint {
     if (this.active) return;
     this.active = true;
     GAME.setCheckpoint(this.x, this.y);
+    GAME.healHeart(); // checkpoints top you up — kind to the waiting-room crowd
     GAME.particles.sparkle(this.x, this.y - 90, 'fx_star', 10);
     GAME.particles.text(this.x, this.y - 120, 'チェックポイント', '#7fe0a0');
     Audio2.sfx('confirm');

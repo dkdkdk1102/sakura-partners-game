@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#10203a">
+<title>うさメカ パトロール 〜伊豆の空をまもれ〜｜サクラパートナーズ</title>
+<link rel="icon" href="assets/sprites/heart.png">
+<link rel="apple-touch-icon" href="assets/sprites/heart.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* shooter-only: big BOMB button bottom-right */
+  .bombwrap { position: fixed; right: max(20px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); z-index: 15; display: none; }
+  body.playing .bombwrap { display: block; }
+  #btn-bomb {
+    width: 96px; height: 96px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.6); cursor: pointer;
+    background: radial-gradient(circle at 35% 30%, rgba(160,225,255,0.85), rgba(40,120,200,0.75));
+    color: #fff; font-size: 22px; font-weight: 800; touch-action: none;
+    transition: transform .06s;
+  }
+  #btn-bomb:active { transform: scale(0.9); }
+</style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div class="topbar">
+    <button id="btn-home" class="topbtn" aria-label="ぼうけんへ">🐰</button>
+    <button id="btn-pause" class="topbtn" aria-label="ポーズ">⏸</button>
+    <button id="btn-sound" class="topbtn" aria-label="音">🔊</button>
+    <button id="btn-music" class="topbtn" aria-label="音楽">♪</button>
+    <button id="btn-fs" class="topbtn" aria-label="全画面">⛶</button>
+  </div>
+
+  <div class="bombwrap"><button id="btn-bomb" aria-label="ボム">BOMB</button></div>
+
+  <!-- data -->
+  <script src="data/atlas.js"></script>
+  <script src="data/facts.js"></script>
+  <script src="data/music.js"></script>
+
+  <!-- engine (shared with the adventure) -->
+  <script src="js/engine/util.js"></script>
+  <script src="js/engine/ui.js"></script>
+  <script src="js/engine/assets.js"></script>
+  <script src="js/engine/anim.js"></script>
+  <script src="js/engine/input.js"></script>
+  <script src="js/engine/store.js"></script>
+  <script src="js/engine/audio.js"></script>
+  <script src="js/engine/playlist.js"></script>
+  <script src="js/engine/core.js"></script>
+
+  <!-- shooter -->
+  <script src="js/shooter/ssongs.js"></script>
+  <script src="js/shooter/sentities.js"></script>
+  <script src="js/shooter/swaves.js"></script>
+  <script src="js/shooter/sgame.js"></script>
+  <script src="js/shooter/smain.js"></script>
+</body>
+</html>

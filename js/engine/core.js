@@ -59,7 +59,8 @@ const Engine = {
       steps++;
     }
     if (steps === 5) this._acc = 0; // avoid spiral of death
-    if (steps === 0) Input.update(); // keep input fresh on sub-step frames (menus poll every frame)
+    // NOTE: no Input.update() on zero-step frames — scenes only read input inside
+    // fixed steps, and refreshing here made prev swallow key edges on 120Hz+ displays
 
     // interpolation factor for smooth rendering between fixed steps (0..1)
     this.alpha = clamp(this._acc / this.DT, 0, 1);
