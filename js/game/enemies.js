@@ -85,13 +85,14 @@ function tanuki(x, y) {
 function boar(x, y) {
   const e = new Enemy(x, y, 58, 44, { score: 300, spriteH: 54 });
   e.anim = new Animator({ move: { frames: ['boar_0', 'boar_1', 'boar_2'], fps: 9 } }); e.anim.play('move');
-  e.charging = false;
+  e.charging = false; e.chargeCd = 0;
   e.ai = (dt, map) => {
     const p = GAME.player;
+    if (e.chargeCd > 0) e.chargeCd -= dt;
     const near = p && Math.abs(p.cy - e.cy) < TILE * 1.4 && Math.abs(p.cx - e.cx) < TILE * 6;
-    if (near && !e.charging) { e.charging = true; e.dir = sign(p.cx - e.cx) || e.dir; }
-    // calm down once the player is well away (charging used to stick forever)
-    if (e.charging && (!p || Math.abs(p.cx - e.cx) > TILE * 10)) e.charging = false;
+    if (near && !e.charging && e.chargeCd <= 0) { e.charging = true; e.dir = sign(p.cx - e.cx) || e.dir; }
+    // a charge ends when it slams a wall (no wall-grinding wedge) or the player leaves
+    if (e.charging && (e.hitWall || !p || Math.abs(p.cx - e.cx) > TILE * 10)) { e.charging = false; e.chargeCd = 0.9; }
     const sp = e.charging ? 230 : 70;
     e.walk(dt, map, sp);
     if (e.charging && e.onGround && Math.random() < 0.3) GAME.particles.dust(e.cx - e.dir * 20, e.bottom);

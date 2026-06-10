@@ -292,7 +292,10 @@ class GameScene {
       // boss (only once it has woken up)
       if (this.boss && this.boss.armed && this.boss.state !== 'dead' && aabb(pb.x, pb.y, pb.w, pb.h, this.boss.x, this.boss.y, this.boss.w, this.boss.h)) {
         const stomp = p.vy > 40 && (prevBottom - this.boss.y) < this.boss.h * 0.55;
-        if (stomp) this.boss.onStomp(p); else p.hurt(this.boss.cx);
+        if (stomp) this.boss.onStomp(p);
+        // while the boss reels from a stomp (iframes), contact is harmless —
+        // otherwise the player still overlapping on the bounce-up took damage
+        else if (this.boss.iframes <= 0) p.hurt(this.boss.cx);
       }
       // goal — locked until the stage boss is defeated
       if (this.goal) {

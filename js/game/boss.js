@@ -100,7 +100,7 @@ class Boss extends Entity {
     if (this.charging && this.t > this.chargeEnd) this.charging = false;
     const speed = this.charging ? this.baseSpeed() * (this.cfg.chargeMul || 2.2) : this.baseSpeed();
     this.vx = this.dir * speed;
-    if (this.hitWall) this.dir *= -1;
+    if (this.hitWall) { this.dir *= -1; this.charging = false; } // a charge ends on impact
     if (this.onGround) {
       const aheadX = this.dir > 0 ? this.right + 2 : this.x - 2;
       const tx = Math.floor(aheadX / TILE), ty = Math.floor((this.bottom + 4) / TILE);

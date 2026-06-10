@@ -61,20 +61,25 @@ class Background {
     // soft sun
     ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = '#fff6d8';
     ctx.beginPath(); ctx.arc(W * 0.82, H * 0.2, 70, 0, 6.29); ctx.fill(); ctx.restore();
-    // drifting clouds (screen-space-ish with slight parallax)
+    // drifting clouds (screen-space-ish with slight parallax) — subtler over a
+    // painted backdrop so they don't fight its own clouds
     if (th.clouds) {
-      ctx.save(); ctx.globalAlpha = 0.85;
+      ctx.save(); ctx.globalAlpha = this.backdrop ? 0.5 : 0.85;
       for (const c of this.clouds) {
         const sx = (c.x - cam.x * 0.15) % (W + 400); const x = sx < -200 ? sx + W + 400 : sx;
         drawSprite(ctx, 'cloud_plat', x, c.y, { w: 120 * c.s, h: 64 * c.s, ax: 0.5, ay: 0.5, alpha: 0.8 });
       }
       ctx.restore();
     }
-    // distant + mid landmark layers (tiled across)
-    const landmarkAlpha = this.backdrop ? 0.45 : 1;
-    this._layer(ctx, cam, W, H, th.far, landmarkAlpha);
-    if (th.sea) this._sea(ctx, cam, W, H);
-    this._layer(ctx, cam, W, H, th.mid, landmarkAlpha);
+    // tiled landmark layers only when there is no painted backdrop — repeating
+    // the same motifs (lighthouses, domes) over the artwork read as a glitch
+    if (!this.backdrop) {
+      this._layer(ctx, cam, W, H, th.far, 1);
+      if (th.sea) this._sea(ctx, cam, W, H);
+      this._layer(ctx, cam, W, H, th.mid, 1);
+    } else if (th.sea) {
+      this._sea(ctx, cam, W, H);
+    }
   }
 
   _backdrop(ctx, cam, W, H) {
