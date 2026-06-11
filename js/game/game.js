@@ -315,11 +315,12 @@ class GameScene {
         // otherwise the player still overlapping on the bounce-up took damage
         else if (this.boss.iframes <= 0) p.hurt(this.boss.cx);
       }
-      // goal — locked until the stage boss is defeated
+      // goal — locked until the stage boss is defeated (always open for the
+      // attract demo: its pilot can't fight bosses and would wall-hop forever)
       if (this.goal) {
         const a = this.goal.aabb();
         if (aabb(pb.x, pb.y, pb.w, pb.h, a.x, a.y, a.w, a.h)) {
-          if (!this.boss || this.bossCleared) this.onReachGoal();
+          if (!this.boss || this.bossCleared || (this.run && this.run.demo)) this.onReachGoal();
           else if (!this._goalHinted) { this._goalHinted = true; HUD.showToast('ゴールは閉じている', 'ボスをやっつけると開くよ！', 3); }
         }
       }
@@ -342,7 +343,8 @@ class GameScene {
     this.cam.follow(this.player, dt);
     if (this.clearT > 0.4 && Math.random() < 0.25) this.particles.sparkle(this.player.cx + rand(-120, 120), this.player.cy - rand(0, 120), 'fx_star', 2);
     const tap = Pointer.consume();
-    if (this.clearT > 1.4 && (tap || Input.pressed('jump') || Input.pressed('pause'))) {
+    const demoAuto = this.run.demo && this.clearT > 2.5; // demo advances itself
+    if (demoAuto || (this.clearT > 1.4 && (tap || Input.pressed('jump') || Input.pressed('pause')))) {
       this.run.onClear && this.run.onClear(this._runState());
     }
   }
@@ -350,7 +352,8 @@ class GameScene {
     this.gameoverT += dt;
     this.particles.update(dt);
     const tap = Pointer.consume();
-    if (this.gameoverT > 1.2 && (tap || Input.pressed('jump') || Input.pressed('pause'))) {
+    const demoAuto = this.run.demo && this.gameoverT > 2.5;
+    if (demoAuto || (this.gameoverT > 1.2 && (tap || Input.pressed('jump') || Input.pressed('pause')))) {
       this.run.onGameOver && this.run.onGameOver(this._runState());
     }
   }

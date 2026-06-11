@@ -150,7 +150,7 @@ class RankingScene {
 
 // ---- attract / demo mode -------------------------------------------------------
 const DEMO = {
-  active: false, timer: 0, stage: 0,
+  active: false, timer: 0, stage: 0, MAX_SEC: 60,
   start() {
     this.active = true; this.timer = 0;
     this.stage = pick([0, 2, 3]);
@@ -180,6 +180,9 @@ addEventListener('keydown', () => { if (DEMO.active) DEMO.exit(); }, true);
   Input.update = function () {
     orig();
     if (!DEMO.active) { hold = -1; return; }
+    // hard cap: whatever happens, the demo hands the screen back to the title
+    DEMO.timer += 1 / 60;
+    if (DEMO.timer > DEMO.MAX_SEC) { DEMO.exit(); return; }
     const g = window.GAME; if (!g || !g.player || g.state !== 'play') return;
     const p = g.player, map = g.map, s = this.state, T = TILE;
     s.left = false; s.run = false; s.right = true; s.down = false; s.pause = false;
