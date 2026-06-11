@@ -126,10 +126,11 @@ const Audio2 = {
     }
   },
 
-  toggleMute() { this.muted = !this.muted; if (window.Playlist) Playlist.refresh(); return this.muted; },
+  toggleMute() { this.muted = !this.muted; if (window.Playlist) Playlist.refresh(); if (window.SMusic) SMusic.refresh(); return this.muted; },
   toggleMusic() {
     this.musicOn = !this.musicOn;
     if (window.Playlist) Playlist.refresh();
+    if (window.SMusic) SMusic.refresh();
     return this.musicOn;
   },
 };

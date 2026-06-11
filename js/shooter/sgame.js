@@ -22,7 +22,7 @@ class SDifficulty {
     this.hard = new Button('ハード', 0, 0, 320, 86, { color: '#ff8b9e', size: 30, sub: '弾幕も敵もパワーアップ！' });
     this.back = new Button('もどる', 0, 0, 160, 48, { color: '#cfcfe0', size: 17, text: '#555' });
     this.layout(Engine.W, Engine.H);
-    Audio2.ensure(); Playlist.start();
+    Audio2.ensure(); SMusic.play('title');
   }
   handleResize(W, H) { this.layout(W, H); }
   layout(W, H) {
@@ -111,9 +111,11 @@ class STitle {
     this.rank = new Button('ランキング', 0, 0, 196, 52, { color: '#cdb9ff', size: 19 });
     this.sound = new Button('♪ 音 ON', 0, 0, 196, 52, { color: '#ffd06b', size: 19 });
     this.adv = new Button('🐰 ぼうけんの ゲームへ', 0, 0, 300, 52, { color: '#a4e6b8', size: 18 });
+    this.news = new Button('更新情報', 0, 0, 168, 46, { color: '#fff0a8', size: 17 });
     this.layout(Engine.W, Engine.H);
-    Audio2.ensure(); Audio2.stopSong(); Playlist.start();
-    Input.onGesture = () => { Audio2.ensure(); Playlist.start(); };
+    if (UpdateNotice.shouldAutoShow()) UpdateNotice.open(true);
+    Audio2.ensure(); Playlist.stop(); SMusic.play('title');
+    Input.onGesture = () => { Audio2.ensure(); SMusic.refresh(); };
   }
   exit() { Input.onGesture = null; }
   handleResize(W, H) { this.layout(W, H); }
@@ -122,6 +124,8 @@ class STitle {
     this.rank.setCenter(W / 2 - 105, H * 0.795);
     this.sound.setCenter(W / 2 + 105, H * 0.795);
     this.adv.setCenter(W / 2, H * 0.91);
+    this.news.setCenter(Math.max(96, W * 0.13), Math.max(44, H * 0.085));
+    UpdateNotice.layout(W, H);
   }
   update(dt) {
     this.t += dt; this.bd.update(dt * 0.5);
@@ -129,7 +133,9 @@ class STitle {
     this.ship.y = Engine.H * 0.52 + Math.sin(this.t * 1.6) * 14;
     this.ship.bank = Math.sin(this.t * 1.6 + 1.2) * 0.1;
     const tap = Pointer.consume();
+    if (UpdateNotice.active) { UpdateNotice.handleInput(tap); return; }
     if (this.t < 0.35) return;
+    if (tap && this.news.contains(tap)) { UpdateNotice.open(false); Audio2.sfx('select'); return; }
     if ((tap && this.start.contains(tap)) || Input.pressed('jump')) { Audio2.sfx('confirm'); Engine.setScene(new SDifficulty()); return; }
     if (tap && this.rank.contains(tap)) { Audio2.sfx('confirm'); Engine.setScene(new SRankingS()); return; }
     if (tap && this.sound.contains(tap)) { const m = Audio2.toggleMute(); this.sound.label = m ? '🔇 音 OFF' : '♪ 音 ON'; Audio2.sfx('select'); }
@@ -154,9 +160,11 @@ class STitle {
     this.ship.render(ctx);
     ctx.font = `600 ${13}px ${FONT}`; ctx.fillStyle = 'rgba(40,60,90,0.85)';
     ctx.fillText('ゆびで ドラッグ（← → ↑ ↓）で いどう ・ ショットは じどう ・ Ｂ で ボム', W / 2, H * 0.74);
+    this.news.draw(ctx);
     this.start.draw(ctx); this.rank.draw(ctx); this.sound.draw(ctx); this.adv.draw(ctx);
     ctx.fillStyle = 'rgba(40,60,90,0.6)'; ctx.font = `600 ${13}px ${FONT}`;
     ctx.fillText('presented by サクラパートナーズ', W / 2, H - 14);
+    UpdateNotice.render(ctx);
   }
 }
 
@@ -186,10 +194,10 @@ class SPlay {
     this._lastPX = null; this._lastPY = null;
     this.pBtns = [new Button('つづける', 0, 0, 260, 60, { color: '#7fd6a0' }), new Button('タイトルへ', 0, 0, 260, 56, { color: '#ff9bb3', size: 20 })];
     Audio2.ensure(); Playlist.stop();
-    Audio2.playSong(SSONGS[st.music]);
+    SMusic.play(st.music === 'night' ? 'night' : 'stage');
     document.body.classList.add('playing'); // shows the BOMB button
   }
-  exit() { Audio2.stopSong(); window.SG = null; document.body.classList.remove('playing'); }
+  exit() { Audio2.stopSong(); SMusic.stop(); window.SG = null; document.body.classList.remove('playing'); }
   handleResize(W, H) {
     if (this.paused) { this.pBtns[0].setCenter(W / 2, H * 0.46); this.pBtns[1].setCenter(W / 2, H * 0.6); }
     if (this.ship) { this.ship.x = clamp(this.ship.x, 36, W - 30); this.ship.y = clamp(this.ship.y, 40, H - 46); }
@@ -230,13 +238,14 @@ class SPlay {
     const pts = Math.round(5000 * SDIFF.scoreMul);
     this.score += pts;
     this.fx.text(boss.x, boss.y - boss.r, `+${fmt(pts)}`, '#ffd84a');
-    Audio2.stopSong(); Audio2.sfx('clear');
+    SMusic.stop(); Audio2.sfx('clear');
     GAMECAM_shake(16, 0.8);
   }
 
   togglePause() {
     if (this.state === 'gameover' || this.state === 'clear') return;
     this.paused = !this.paused;
+    SMusic.duck(this.paused);
     if (this.paused) { this.pBtns[0].setCenter(Engine.W / 2, Engine.H * 0.46); this.pBtns[1].setCenter(Engine.W / 2, Engine.H * 0.6); }
     Audio2.sfx('pause');
   }
@@ -275,16 +284,16 @@ class SPlay {
       this.timer += dt;
       const waves = this.stage.waves;
       while (this.waveIdx < waves.length && this.timer >= waves[this.waveIdx].t) { waves[this.waveIdx].f(this); this.waveIdx++; }
-      if (this.timer >= this.stage.bossAt) { this.state = 'warn'; this.bossWarnT = 2.2; Audio2.stopSong(); Audio2.sfx('boss'); }
+      if (this.timer >= this.stage.bossAt) { this.state = 'warn'; this.bossWarnT = 2.2; SMusic.stop(); Audio2.sfx('boss'); }
     } else if (this.state === 'warn') {
       this.bossWarnT -= dt;
-      if (this.bossWarnT <= 0) { this.state = 'boss'; this.boss = new SBoss(this.stage.boss); Audio2.playSong(SSONGS.boss); }
+      if (this.bossWarnT <= 0) { this.state = 'boss'; this.boss = new SBoss(this.stage.boss); SMusic.play('boss'); }
     } else if (this.state === 'boss') {
       if (this.boss) this.boss.update(dt);
       if (this.boss && this.boss.dead && this.boss.deadT > 2.2) {
         this.boss = null; this.state = 'clear'; this.clearT = 0;
         this.eshots.length = 0; // leftover bullets can't sour the victory lap
-        Audio2.playSong(SSONGS.clear);
+        SMusic.stop();
       }
     } else if (this.state === 'clear') {
       this.clearT += dt;
@@ -332,7 +341,7 @@ class SPlay {
     this.pickups = this.pickups.filter((p) => !p.dead);
 
     // ship death → game over (never from the clear screen)
-    if (this.ship.dead && this.ship.deadT > 1.4 && this.state !== 'gameover' && this.state !== 'clear') { this.state = 'gameover'; this.overT = 0; Audio2.stopSong(); }
+    if (this.ship.dead && this.ship.deadT > 1.4 && this.state !== 'gameover' && this.state !== 'clear') { this.state = 'gameover'; this.overT = 0; SMusic.stop(); }
   }
 
   _collide() {
@@ -535,7 +544,7 @@ class SEnding {
     this.bd = new SBackdrop(SSTAGES[2]);
     this.next = new Button('すすむ', 0, 0, 240, 62, { color: '#7fd0ff', size: 24, text: '#16324a' });
     this.next.setCenter(Engine.W / 2, Engine.H * 0.84);
-    Audio2.playSong(SSONGS.clear);
+    SMusic.play('title');
   }
   handleResize(W, H) { if (this.next) this.next.setCenter(W / 2, H * 0.84); }
   update(dt) {
@@ -590,7 +599,7 @@ class SNameEntryS {
     this.btnDel = new Button('けす', 0, 0, 110, 50, { color: '#ffb0a0', size: 19 });
     this.btnOk = new Button('きめる', 0, 0, 140, 54, { color: '#7fd6a0', size: 21 });
     this.layout(Engine.W, Engine.H);
-    Audio2.ensure(); Audio2.stopSong(); Playlist.start(); // stop the synth so the MP3 doesn't double up
+    Audio2.ensure(); SMusic.play('title');
   }
   handleResize(W, H) { this.layout(W, H); }
   layout(W, H) {
@@ -633,7 +642,7 @@ class SNameEntryS {
 
 class SRankingS {
   constructor(hl = -1) { this.hl = hl; this.t = 0; }
-  enter() { this.back = new Button('タイトルへ', 0, 0, 240, 58, { color: '#7fd0ff', size: 21, text: '#16324a' }); this.back.setCenter(Engine.W / 2, Engine.H * 0.92); Audio2.ensure(); Audio2.stopSong(); Playlist.start(); }
+  enter() { this.back = new Button('タイトルへ', 0, 0, 240, 58, { color: '#7fd0ff', size: 21, text: '#16324a' }); this.back.setCenter(Engine.W / 2, Engine.H * 0.92); Audio2.ensure(); SMusic.play('title'); }
   handleResize(W, H) { if (this.back) this.back.setCenter(W / 2, H * 0.92); }
   update(dt) {
     this.t += dt;

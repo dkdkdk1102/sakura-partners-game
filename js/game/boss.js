@@ -7,10 +7,10 @@
 
 const BOSS_CFG = {
   // ---- ground chargers ----
-  tanuki: { frames: ['tanuki_run', 'tanuki_stand'], w: 60, h: 60, spriteH: 84, name: 'おおだぬき',
-            mode: 'ground', speed: 86, chargeMul: 2.1, attack: 'none', jumps: true, hp: 2, tint: '#c98a4a' },
-  boar:   { frames: ['boar_0', 'boar_1', 'boar_2'], w: 84, h: 58, spriteH: 76, name: '天城の猪王',
-            mode: 'ground', speed: 94, chargeMul: 2.4, attack: 'none', hp: 3, tint: '#8a5a3a' },
+  tanuki: { frames: ['advb_tanuki_0', 'advb_tanuki_1'], w: 60, h: 60, spriteH: 100, name: 'おおだぬき',
+            mode: 'ground', speed: 86, chargeMul: 2.1, attack: 'none', jumps: true, hp: 2, bigArt: true },
+  boar:   { frames: ['advb_boar_0', 'advb_boar_1'], w: 84, h: 58, spriteH: 96, name: '天城の猪王',
+            mode: 'ground', speed: 94, chargeMul: 2.4, attack: 'none', hp: 3, bigArt: true },
   crab:   { frames: ['boss_crab_0', 'boss_crab_1'], w: 92, h: 64, spriteH: 88, name: 'カニ大将',
             mode: 'ground', speed: 82, chargeMul: 2.4, attack: 'bubble', hp: 4, crowned: true },
   urchin: { frames: ['boss_urchin_0', 'boss_urchin_1'], w: 84, h: 72, spriteH: 92, name: 'ウニ大魔王',
@@ -19,12 +19,12 @@ const BOSS_CFG = {
   octopus:{ frames: ['octo_0', 'octo_1', 'octo_2', 'octo_3'], w: 70, h: 60, spriteH: 76, name: 'おおダコ',
             mode: 'shooter', speed: 46, attack: 'ink', hp: 3, tint: '#cc4444' },
   // ---- flying divers ----
-  cloud:  { frames: ['cloud_0', 'cloud_1', 'cloud_angry'], w: 74, h: 56, spriteH: 70, name: 'さくら雲の主',
-            mode: 'fly', speed: 95, attack: 'none', amp: 2.4, freq: 1.1, hp: 3, tint: '#e9d6ff' },
-  gull:   { frames: ['gull_0', 'gull_1', 'gull_2'], w: 78, h: 52, spriteH: 60, name: '大カモメ',
-            mode: 'fly', speed: 150, attack: 'none', amp: 2.8, freq: 1.5, hp: 3, tint: '#c8d2e0' },
-  serpent:{ frames: ['serpent_0', 'serpent_1', 'serpent_2', 'serpent_3'], w: 76, h: 64, spriteH: 88, name: '港のウミヘビ',
-            mode: 'fly', speed: 110, attack: 'bubble', amp: 2.0, freq: 1.3, hp: 3, tint: '#5aa8d8' },
+  cloud:  { frames: ['advb_cloud_0', 'advb_cloud_1'], w: 74, h: 56, spriteH: 92, name: 'さくら雲の主',
+            mode: 'fly', speed: 95, attack: 'none', amp: 2.4, freq: 1.1, hp: 3, bigArt: true },
+  gull:   { frames: ['advb_gull_0', 'advb_gull_1'], w: 78, h: 52, spriteH: 86, name: '大カモメ',
+            mode: 'fly', speed: 150, attack: 'none', amp: 2.8, freq: 1.5, hp: 3, bigArt: true },
+  serpent:{ frames: ['advb_serpent_0', 'advb_serpent_1'], w: 76, h: 64, spriteH: 100, name: '港のウミヘビ',
+            mode: 'fly', speed: 110, attack: 'bubble', amp: 2.0, freq: 1.3, hp: 3, bigArt: true },
 };
 
 class Boss extends Entity {
@@ -201,8 +201,8 @@ class Boss extends Entity {
     const meta = Assets.size(name); const h = this.spriteH; const w = h * (meta.w / meta.h);
     const rot = this.state === 'dead' ? (this.spin || 0) : 0;
     drawSprite(ctx, name, this.cx, this.bottom + 3, { w, h, flip: this.facing > 0, ax: 0.5, ay: 1, rot, alpha: a });
-    // a little crown for non-crowned bosses
-    if (this.armed && this.state !== 'dead' && !this.cfg.crowned) {
+    // a little crown only for bosses without dedicated art
+    if (this.armed && this.state !== 'dead' && !this.cfg.crowned && !this.cfg.bigArt) {
       drawSprite(ctx, 'fx_star', this.cx, this.bottom - h + 4, { w: 22, h: 22, ax: 0.5, ay: 0.5, alpha: 0.9 });
     }
     if (this.armed && this.state !== 'dead' && this.intro <= 0) this._hpbar(ctx);

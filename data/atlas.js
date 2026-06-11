@@ -868,6 +868,46 @@ window.ATLAS = {
   "w": 400,
   "h": 329
  },
+ "advb_tanuki_0": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_tanuki_1": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_boar_0": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_boar_1": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_cloud_0": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_cloud_1": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_serpent_0": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_serpent_1": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_gull_0": {
+  "w": 500,
+  "h": 400
+ },
+ "advb_gull_1": {
+  "w": 500,
+  "h": 400
+ },
  "sh_bg_coast": {
   "w": 2048,
   "h": 720
@@ -971,6 +1011,30 @@ window.ATLAS = {
  "sh_blt_spine": {
   "w": 64,
   "h": 64
+ },
+ "sh_jelly_0": {
+  "w": 200,
+  "h": 220
+ },
+ "sh_jelly_1": {
+  "w": 200,
+  "h": 220
+ },
+ "sh_item_power": {
+  "w": 96,
+  "h": 96
+ },
+ "sh_item_bomb": {
+  "w": 96,
+  "h": 96
+ },
+ "sh_item_heart": {
+  "w": 96,
+  "h": 96
+ },
+ "sh_item_coin": {
+  "w": 96,
+  "h": 96
  },
  "t_dirt": {
   "w": 94,

@@ -260,8 +260,8 @@ const FOES = {
   jelly(y) {
     const s = SS();
     return new Foe({
-      y, vx: -85 * s, hp: 2, score: 150, size: 54, r: 22,
-      frames: ['jelly_0', 'jelly_1', 'jelly_2'], fps: 5,
+      y, vx: -85 * s, hp: 2, score: 150, size: 58, r: 22,
+      frames: ['sh_jelly_0', 'sh_jelly_1'], fps: 4,
       ai(dt) {
         this.vy = Math.sin(this.t * 1.8) * 40 * s;
         this.shootT -= dt * SDIFF.fire;
@@ -489,7 +489,7 @@ class Pickup {
   constructor(x, y, kind) {
     this.x = x; this.y = y; this.kind = kind; this.t = rand(0, 6);
     this.vx = -70 * SS(); this.r = 18 * SS(); this.dead = false;
-    this.sprite = kind === 'power' ? 'onsen_drop' : kind === 'bomb' ? 'manju' : kind === 'heart' ? 'heart' : 'mikan';
+    this.sprite = kind === 'power' ? 'sh_item_power' : kind === 'bomb' ? 'sh_item_bomb' : kind === 'heart' ? 'sh_item_heart' : 'sh_item_coin';
   }
   update(dt) {
     this.t += dt; this.x += this.vx * dt;
@@ -501,7 +501,7 @@ class Pickup {
     if (this.x < -40) this.dead = true;
   }
   render(ctx) {
-    const s = 36 * SS() + Math.sin(this.t * 4) * 2;
+    const s = 42 * SS() + Math.sin(this.t * 4) * 2;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     const g = ctx.createRadialGradient(this.x, this.y, 2, this.x, this.y, 26 * SS());
     g.addColorStop(0, 'rgba(255,255,210,0.5)'); g.addColorStop(1, 'rgba(255,220,120,0)');

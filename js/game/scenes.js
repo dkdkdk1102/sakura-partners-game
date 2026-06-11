@@ -60,7 +60,9 @@ class TitleScene {
     this.sound = new Button('♪ 音 ON', 0, 0, 196, 52, { color: '#ffd06b', size: 19 });
     this.rank = new Button('ランキング', 0, 0, 196, 52, { color: '#cdb9ff', size: 19 });
     this.mini = new Button('ミニゲーム', 0, 0, 196, 52, { color: '#a4e6b8', size: 19 });
+    this.news = new Button('更新情報', 0, 0, 168, 46, { color: '#fff0a8', size: 17 });
     this.layout(Engine.W, Engine.H);
+    if (UpdateNotice.shouldAutoShow()) UpdateNotice.open(true);
     // main-screen BGM = the MP3 playlist (random, auto-advancing); no synth here
     Audio2.ensure(); Audio2.stopSong();
     Playlist.start();
@@ -76,16 +78,21 @@ class TitleScene {
     this.sound.setCenter(W / 2 + 105, H * 0.745);
     this.rank.setCenter(W / 2 - 105, H * 0.865);
     this.mini.setCenter(W / 2 + 105, H * 0.865);
+    this.news.setCenter(Math.max(96, W * 0.13), Math.max(44, H * 0.085));
+    UpdateNotice.layout(W, H);
   }
   update(dt) {
     this.t += dt; petalsUpdate(dt, Engine.W);
     // attract mode: idle on the title for a while → autoplay demo
-    this.idleT += dt;
+    // (paused while the update notice is open so it can be read in peace)
+    this.idleT = UpdateNotice.active ? 0 : this.idleT + dt;
     if (Input.state.any || Pointer.down || Pointer.tap) this.idleT = 0;
     if (this.idleT > this.attractAfter && window.DEMO && !DEMO.active) { DEMO.start(); return; }
     const tap = Pointer.consume();
+    if (UpdateNotice.active) { UpdateNotice.handleInput(tap); return; }
     if (this.t < 0.35) return; // swallow the input that woke us from the demo
     if (this.showHelp) { if (tap || Input.pressed('jump') || Input.pressed('pause')) { this.showHelp = false; Audio2.sfx('select'); } return; }
+    if (tap && this.news.contains(tap)) { UpdateNotice.open(false); Audio2.sfx('select'); return; }
     if ((tap && this.start.contains(tap)) || Input.pressed('jump') || Input.pressed('pause')) { Audio2.sfx('confirm'); Engine.setScene(new DifficultyScene()); return; }
     if (tap && this.help.contains(tap)) { this.showHelp = true; Audio2.sfx('select'); }
     if (tap && this.sound.contains(tap)) { const m = Audio2.toggleMute(); this.sound.label = m ? '🔇 音 OFF' : '♪ 音 ON'; Audio2.sfx('select'); }
@@ -112,11 +119,13 @@ class TitleScene {
     ctx.lineWidth = 7; ctx.strokeStyle = '#fff'; ctx.strokeText('〜 うさぎと、伊東をめざして 〜', W / 2, H * 0.285);
     ctx.fillStyle = '#5a3a66'; ctx.fillText('〜 うさぎと、伊東をめざして 〜', W / 2, H * 0.285);
     ctx.restore();
+    this.news.draw(ctx);
     this.start.draw(ctx, this.t); this.shooter.draw(ctx); this.help.draw(ctx); this.sound.draw(ctx);
     this.rank.draw(ctx); this.mini.draw(ctx);
     ctx.fillStyle = 'rgba(90,60,80,0.7)'; ctx.font = `600 ${14}px ${FONT}`;
     ctx.fillText('presented by サクラパートナーズ', W / 2, H - 18);
     if (this.showHelp) this._help(ctx, W, H);
+    UpdateNotice.render(ctx);
   }
   _help(ctx, W, H) {
     ctx.fillStyle = 'rgba(20,16,32,0.72)'; ctx.fillRect(0, 0, W, H);

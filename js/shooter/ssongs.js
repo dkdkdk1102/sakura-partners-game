@@ -40,3 +40,47 @@ const SSONGS = {
 };
 
 window.SSONGS = SSONGS;
+
+/* SMusic — looping MP3 BGM for the shooter (generated tracks in audio/).
+   Honors the mute / music toggles, ducks while paused, and falls back to the
+   synth SSONGS if a file fails to load (e.g. offline copy without the mp3s). */
+const SMusic = {
+  el: null, cur: null, want: null, vol: 0.5, _duck: false, _failed: false,
+  tracks: {
+    title: 'audio/sh_bgm_title.mp3',
+    stage: 'audio/sh_bgm_stage.mp3',
+    night: 'audio/sh_bgm_night.mp3',
+    boss:  'audio/sh_bgm_boss.mp3',
+  },
+  fallback: { title: 'title', stage: 'sky', night: 'night', boss: 'boss' },
+  _ensure() {
+    if (this.el) return;
+    const a = new Audio();
+    a.loop = true; a.preload = 'auto';
+    a.addEventListener('error', () => {
+      this._failed = true;
+      if (this.want) { Audio2.ensure(); Audio2.playSong(SSONGS[this.fallback[this.want]]); }
+    });
+    this.el = a;
+  },
+  _muted() { return Audio2.muted || Audio2.musicOn === false; },
+  play(key) {
+    this._ensure();
+    this.want = key;
+    Audio2.stopSong(); // never run synth + mp3 together
+    if (this._failed) { Audio2.ensure(); Audio2.playSong(SSONGS[this.fallback[key]]); return; }
+    if (this.cur !== key) { this.el.src = this.tracks[key]; this.cur = key; }
+    this.el.volume = this.vol * (this._duck ? 0.3 : 1);
+    if (this._muted()) { this.el.pause(); return; }
+    const p = this.el.play(); if (p && p.catch) p.catch(() => {}); // retried on next gesture/refresh
+  },
+  stop() { this.want = null; this.cur = null; if (this.el) this.el.pause(); if (this._failed) Audio2.stopSong(); },
+  duck(on) { this._duck = on; this.refresh(); },
+  refresh() {
+    if (this._failed || !this.el) return;
+    this.el.volume = this.vol * (this._duck ? 0.3 : 1);
+    if (this.want && !this._muted() && this.el.paused) { const p = this.el.play(); p && p.catch && p.catch(() => {}); }
+    if (this._muted()) this.el.pause();
+  },
+};
+window.SMusic = SMusic;
