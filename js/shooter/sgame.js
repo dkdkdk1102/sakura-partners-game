@@ -2,6 +2,59 @@
    same verified Izu facts), ending, game-over, ranking + kana name entry. The
    play scene publishes itself as window.SG for entities. */
 
+// ---------------------------------------------------------------- difficulty -
+/* multipliers applied across entities: bullet speed, enemy fire rate, boss HP,
+   tough-foe HP, player hearts/bombs, extra spawns, and a score multiplier so
+   harder runs rank higher. */
+const SDIFFS = {
+  easy:   { key: 'easy',   label: 'やさしい', bullet: 0.85, fire: 0.8,  bossHp: 0.85, hpAdd: 0, hearts: 4, bombs: 3, extraN: 0, scoreMul: 0.8 },
+  normal: { key: 'normal', label: 'ノーマル', bullet: 1.15, fire: 1.25, bossHp: 1.1,  hpAdd: 0, hearts: 3, bombs: 2, extraN: 0, scoreMul: 1.0 },
+  hard:   { key: 'hard',   label: 'ハード',   bullet: 1.45, fire: 1.7,  bossHp: 1.35, hpAdd: 1, hearts: 3, bombs: 2, extraN: 1, scoreMul: 1.4 },
+};
+window.SDIFF = SDIFFS.normal;
+
+class SDifficulty {
+  enter() {
+    this.t = 0;
+    this.bd = new SBackdrop(SSTAGES[0]);
+    this.easy = new Button('やさしい', 0, 0, 320, 86, { color: '#7fd6a0', size: 30, sub: 'ハート4・ボム3。ゆったり' });
+    this.normal = new Button('ノーマル', 0, 0, 320, 86, { color: '#ffb86b', size: 30, sub: '弾がはやい。歯ごたえあり' });
+    this.hard = new Button('ハード', 0, 0, 320, 86, { color: '#ff8b9e', size: 30, sub: '弾幕も敵もパワーアップ！' });
+    this.back = new Button('もどる', 0, 0, 160, 48, { color: '#cfcfe0', size: 17, text: '#555' });
+    this.layout(Engine.W, Engine.H);
+    Audio2.ensure(); Playlist.start();
+  }
+  handleResize(W, H) { this.layout(W, H); }
+  layout(W, H) {
+    this.easy.setCenter(W / 2, H * 0.34);
+    this.normal.setCenter(W / 2, H * 0.52);
+    this.hard.setCenter(W / 2, H * 0.7);
+    this.back.setCenter(W / 2, H * 0.87);
+  }
+  _go(d) { window.SDIFF = d; Audio2.sfx('confirm'); Engine.setScene(new SPlay(0)); }
+  update(dt) {
+    this.t += dt; this.bd.update(dt * 0.4);
+    if (Input.pressed('jump')) { this._go(SDIFFS.easy); return; }
+    if (Input.pressed('pause')) { Audio2.sfx('select'); Engine.setScene(new STitle()); return; }
+    const tap = Pointer.consume(); if (!tap) return;
+    if (this.easy.contains(tap)) this._go(SDIFFS.easy);
+    else if (this.normal.contains(tap)) this._go(SDIFFS.normal);
+    else if (this.hard.contains(tap)) this._go(SDIFFS.hard);
+    else if (this.back.contains(tap)) { Audio2.sfx('select'); Engine.setScene(new STitle()); }
+  }
+  render(ctx) {
+    const W = Engine.W, H = Engine.H;
+    this.bd.render(ctx);
+    ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center';
+    ctx.font = `900 ${Math.min(40, W * 0.052)}px ${FONT}`;
+    ctx.lineWidth = 8; ctx.strokeStyle = '#fff';
+    ctx.strokeText('むずかしさを えらぼう', W / 2, H * 0.18);
+    ctx.fillStyle = '#2a6a9c'; ctx.fillText('むずかしさを えらぼう', W / 2, H * 0.18);
+    this.easy.draw(ctx); this.normal.draw(ctx); this.hard.draw(ctx); this.back.draw(ctx);
+  }
+}
+
 // ---------------------------------------------------------------- backdrop --
 class SBackdrop {
   constructor(stage) { this.stage = stage; this.x = 0; this.t = 0; this.clouds = []; for (let i = 0; i < 10; i++) this.clouds.push({ x: rand(0, 2000), y: rand(30, Engine.H * 0.5), s: rand(0.5, 1.4), v: rand(30, 90) }); }
@@ -24,10 +77,7 @@ class SBackdrop {
       }
     } else { ctx.fillStyle = '#9fd8ff'; ctx.fillRect(0, 0, W, H); }
     if (this.stage.night) { ctx.fillStyle = 'rgba(18,16,52,0.42)'; ctx.fillRect(0, 0, W, H); }
-    // drifting cloud puffs (fast layer = sense of speed)
-    ctx.save(); ctx.globalAlpha = this.stage.night ? 0.25 : 0.5;
-    for (const c of this.clouds) drawSprite(ctx, 'cloud_plat', c.x, c.y, { w: 130 * c.s, h: 70 * c.s, ax: 0.5, ay: 0.5 });
-    ctx.restore();
+    // (no sprite cloud layer — it doubled up against the painted clouds)
     // speed streaks (subtle, additive)
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.12;
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
@@ -84,7 +134,7 @@ class STitle {
     this.ship.bank = Math.sin(this.t * 1.6 + 1.2) * 0.1;
     const tap = Pointer.consume();
     if (this.t < 0.35) return;
-    if ((tap && this.start.contains(tap)) || Input.pressed('jump')) { Audio2.sfx('confirm'); Engine.setScene(new SPlay(0)); return; }
+    if ((tap && this.start.contains(tap)) || Input.pressed('jump')) { Audio2.sfx('confirm'); Engine.setScene(new SDifficulty()); return; }
     if (tap && this.rank.contains(tap)) { Audio2.sfx('confirm'); Engine.setScene(new SRankingS()); return; }
     if (tap && this.sound.contains(tap)) { const m = Audio2.toggleMute(); this.sound.label = m ? '🔇 音 OFF' : '♪ 音 ON'; Audio2.sfx('select'); }
     if (tap && this.adv.contains(tap)) { location.href = 'index.html'; }
@@ -151,10 +201,14 @@ class SPlay {
 
   // ---- spawn helpers used by the wave table ----
   spawn(type, ry) { this.foes.push(FOES[type](RY(ry))); }
-  spawnRow(type, rys, opts) { for (const ry of rys) this.foes.push(FOES[type](RY(ry), opts || {})); }
+  spawnRow(type, rys, opts) {
+    for (const ry of rys) this.foes.push(FOES[type](RY(ry), opts || {}));
+    if (SDIFF.extraN > 0 && rys.length >= 2) this.foes.push(FOES[type](RY(0.5), opts || {})); // hard: one more
+  }
   spawnV(type, ryC, n) {
-    for (let i = 0; i < n; i++) {
-      const k = i - (n - 1) / 2;
+    const total = n + SDIFF.extraN;
+    for (let i = 0; i < total; i++) {
+      const k = i - (total - 1) / 2;
       const f = FOES[type](RY(ryC) + k * 46 * SS());
       f.x += Math.abs(k) * 50 * SS();
       this.foes.push(f);
@@ -166,7 +220,7 @@ class SPlay {
   onKill(foe) {
     this.combo++; this.comboT = 2;
     const mult = 1 + Math.min(this.combo, 20) * 0.1;
-    const pts = Math.round(foe.score * mult);
+    const pts = Math.round(foe.score * mult * SDIFF.scoreMul);
     this.score += pts;
     this.fx.boomAt(foe.x, foe.y, foe.size / (52 * SS()));
     this.fx.text(foe.x, foe.y - 24, `+${pts}`, '#ffe9a8');
@@ -177,8 +231,9 @@ class SPlay {
     if (Math.random() < 0.12) this.pickups.push(new Pickup(foe.x, foe.y, 'mikan'));
   }
   onBossDown(boss) {
-    this.score += 5000;
-    this.fx.text(boss.x, boss.y - boss.r, '+5000', '#ffd84a');
+    const pts = Math.round(5000 * SDIFF.scoreMul);
+    this.score += pts;
+    this.fx.text(boss.x, boss.y - boss.r, `+${fmt(pts)}`, '#ffd84a');
     Audio2.stopSong(); Audio2.sfx('clear');
     GAMECAM_shake(16, 0.8);
   }
@@ -525,7 +580,7 @@ const SRank = {
   qualifies(score) { if (score <= 0) return false; const l = this.list(); return l.length < this.MAX || score > l[l.length - 1].score; },
   add(name, score) {
     const l = this.list();
-    const e = { name: name || 'うさメカ', score, d: new Date().toLocaleDateString('ja-JP') };
+    const e = { name: name || 'うさメカ', score, diff: SDIFF.label, d: new Date().toLocaleDateString('ja-JP') };
     l.push(e); l.sort((a, b) => b.score - a.score);
     const cut = l.slice(0, this.MAX); Store.set('shooter_ranking', cut);
     return cut.indexOf(e);
@@ -610,7 +665,9 @@ class SRankingS {
       ctx.fillStyle = i === 0 ? '#ffd84a' : i === 1 ? '#c0d0e0' : i === 2 ? '#d09a60' : '#8aa6c4';
       ctx.fillText(`${i + 1}`, bx + 24, y);
       ctx.fillStyle = '#e6f0fa'; ctx.fillText(e.name, bx + 66, y);
-      ctx.textAlign = 'right'; ctx.fillStyle = '#7fd0ff'; ctx.fillText(fmt(e.score), bx + bw - 24, y);
+      ctx.textAlign = 'right'; ctx.fillStyle = '#7fd0ff'; ctx.fillText(fmt(e.score), bx + bw - 96, y);
+      ctx.font = `600 ${Math.floor(rh * 0.32)}px ${FONT}`; ctx.fillStyle = '#8aa6c4';
+      ctx.fillText(e.diff || '', bx + bw - 20, y);
     });
     ctx.textAlign = 'center';
     this.back.draw(ctx);
@@ -621,6 +678,7 @@ class SRankingS {
 const KANA_COLS = ['あいうえお', 'かきくけこ', 'さしすせそ', 'たちつてと', 'なにぬねの',
                    'はひふへほ', 'まみむめも', 'や　ゆ　よ', 'らりるれろ', 'わ　を　ん'];
 
-window.SBoot = SBoot; window.STitle = STitle; window.SPlay = SPlay;
+window.SBoot = SBoot; window.STitle = STitle; window.SPlay = SPlay; window.SDifficulty = SDifficulty;
+window.SDIFFS = SDIFFS;
 window.SEnding = SEnding; window.SRank = SRank; window.SNameEntryS = SNameEntryS; window.SRankingS = SRankingS;
 window.SBackdrop = SBackdrop;

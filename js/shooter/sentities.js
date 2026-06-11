@@ -15,8 +15,8 @@ class Ship {
     this.r = 9 * s;              // forgiving hitbox (visual is bigger)
     this.speed = 420 * s;
     this.power = 1;              // 1..3
-    this.hearts = 3; this.maxHearts = 3;
-    this.bombs = 2;
+    this.hearts = SDIFF.hearts; this.maxHearts = SDIFF.hearts;
+    this.bombs = SDIFF.bombs;
     this.iframes = 0; this.shotT = 0; this.muzzle = 0;
     this.t = 0; this.bank = 0;
     this.dead = false; this.deadT = 0;
@@ -188,7 +188,8 @@ class PShot {
 class EShot {
   // kind: 'bubble' (sprite) | 'spike' (glow dot) | 'pearl' (white glow)
   constructor(x, y, vx, vy, kind = 'spike', r = 6) {
-    this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+    this.x = x; this.y = y;
+    this.vx = vx * SDIFF.bullet; this.vy = vy * SDIFF.bullet;
     this.kind = kind; this.r = r * SS(); this.t = rand(0, 6); this.dead = false;
   }
   update(dt) {
@@ -223,6 +224,7 @@ class Foe {
       shootT: rand(1, 2.4), dead: false, flash: 0, ground: false,
     }, o);
     this.size *= SS(); this.r *= SS();
+    if (this.hp >= 2) this.hp += SDIFF.hpAdd;
     this.x0 = this.x; this.y0 = this.y;
   }
   damage(n, quiet) {
@@ -287,7 +289,7 @@ const FOES = {
       frames: ['jelly_0', 'jelly_1', 'jelly_2'], fps: 5,
       ai(dt) {
         this.vy = Math.sin(this.t * 1.8) * 40 * s;
-        this.shootT -= dt;
+        this.shootT -= dt * SDIFF.fire;
         if (this.shootT <= 0 && this.x < Engine.W - 60) {
           this.shootT = rand(2.2, 3.2);
           const [vx, vy] = this.aimAtShip(190 * s);
@@ -318,7 +320,7 @@ const FOES = {
       frames: ['octo_0', 'octo_1', 'octo_2', 'octo_3'], fps: 5, flip: true,
       ai(dt) {
         if (this.x < Engine.W * 0.78) this.vx = -26 * s;
-        this.shootT -= dt;
+        this.shootT -= dt * SDIFF.fire;
         if (this.shootT <= 0) {
           this.shootT = rand(1.7, 2.4);
           const [vx, vy] = this.aimAtShip(210 * s);
@@ -357,7 +359,7 @@ const FOES = {
       sprite: 'prop_lantern',
       ai(dt) {
         this.vy = Math.sin(this.t * 2.2) * 30 * s;
-        this.shootT -= dt;
+        this.shootT -= dt * SDIFF.fire;
         if (this.shootT <= 0) {
           this.shootT = rand(1.8, 2.6);
           const [vx, vy] = this.aimAtShip(180 * s);
@@ -399,7 +401,7 @@ class SBoss {
     const s = SS();
     this.x = Engine.W + 140; this.y = Engine.H * 0.5;
     this.size = c.size * s; this.r = c.r * s;
-    this.hp = c.hp; this.maxHp = c.hp;
+    this.hp = Math.round(c.hp * SDIFF.bossHp); this.maxHp = this.hp;
     this.t = 0; this.patT = 0; this.pat = 0; this.intro = true;
     this.dead = false; this.deadT = 0; this.flash = 0;
     this.vx = 0; this.vy = 0;
@@ -439,7 +441,7 @@ class SBoss {
   pat_octo(dt, s, sh) {
     // weave vertically, 3-way ink + occasional aimed burst; rage: 5-way
     this.y = Engine.H * 0.5 + Math.sin(this.t * 0.9) * Engine.H * 0.26;
-    this.shoot1 = (this.shoot1 || 0) - dt;
+    this.shoot1 = (this.shoot1 || 0) - dt * SDIFF.fire;
     if (this.shoot1 <= 0) {
       this.shoot1 = this.rage() ? 1.1 : 1.6;
       const [vx, vy] = aimFrom(this.x - this.r * 0.5, this.y, sh, 230 * s);
@@ -447,7 +449,7 @@ class SBoss {
       for (const a of arcs) { const c = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x - this.r * 0.5, this.y, vx * c - vy * sn, vx * sn + vy * c, 'spike', 6)); }
       Audio2.sfx('ink');
     }
-    this.shoot2 = (this.shoot2 || 3) - dt;
+    this.shoot2 = (this.shoot2 || 3) - dt * SDIFF.fire;
     if (this.shoot2 <= 0) {
       this.shoot2 = 4.2;
       for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; SG.eshots.push(new EShot(this.x, this.y, Math.cos(a) * 150 * s, Math.sin(a) * 150 * s, 'bubble', 6)); }
@@ -458,7 +460,7 @@ class SBoss {
     // figure-8 sweeps + feather fans + summons chicks
     this.y = Engine.H * 0.5 + Math.sin(this.t * 1.5) * Engine.H * 0.3;
     this.x = Engine.W * 0.74 + Math.sin(this.t * 0.75) * Engine.W * 0.13;
-    this.shoot1 = (this.shoot1 || 1) - dt;
+    this.shoot1 = (this.shoot1 || 1) - dt * SDIFF.fire;
     if (this.shoot1 <= 0) {
       this.shoot1 = this.rage() ? 0.9 : 1.3;
       const base = Math.atan2(sh.y - this.y, sh.x - this.x);
@@ -469,20 +471,20 @@ class SBoss {
       }
       Audio2.sfx('blip');
     }
-    this.summon = (this.summon || 4) - dt;
+    this.summon = (this.summon || 4) - dt * SDIFF.fire;
     if (this.summon <= 0) { this.summon = this.rage() ? 4.5 : 6; SG.foes.push(FOES.chick(this.y - 60 * s, -40)); SG.foes.push(FOES.chick(this.y + 60 * s, 40)); Audio2.sfx('boss'); }
   }
   pat_urchin(dt, s, sh) {
     // slow drift + spiral rings; rage: faster spiral + aimed spreads
     this.y = Engine.H * 0.5 + Math.sin(this.t * 0.6) * Engine.H * 0.22;
     this.spA = (this.spA || 0) + dt * (this.rage() ? 3.4 : 2.2);
-    this.shoot1 = (this.shoot1 || 0.4) - dt;
+    this.shoot1 = (this.shoot1 || 0.4) - dt * SDIFF.fire;
     if (this.shoot1 <= 0) {
       this.shoot1 = this.rage() ? 0.16 : 0.24;
       const a = this.spA;
       for (const o of [0, Math.PI]) SG.eshots.push(new EShot(this.x, this.y, Math.cos(a + o) * 170 * s, Math.sin(a + o) * 170 * s, 'spike', 5));
     }
-    this.shoot2 = (this.shoot2 || 2.5) - dt;
+    this.shoot2 = (this.shoot2 || 2.5) - dt * SDIFF.fire;
     if (this.shoot2 <= 0) {
       this.shoot2 = this.rage() ? 2.2 : 3.4;
       const [vx, vy] = aimFrom(this.x, this.y, sh, 240 * s);
