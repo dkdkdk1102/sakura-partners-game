@@ -339,6 +339,81 @@ const FOES = {
       },
     });
   },
+  // diving gull — flies in, hovers with a wing-up telegraph, then dives at you
+  gullDive(y) {
+    const s = SS();
+    return new Foe({
+      y, vx: -240 * s, hp: 1, score: 150, size: 56, r: 22,
+      frames: ['sh_gull_0', 'sh_gull_1'], fps: 8, phase: 'in', hoverT: 0.55,
+      ai(dt) {
+        if (this.phase === 'in') {
+          if (this.x < Engine.W * 0.74) { this.phase = 'hover'; this.vx = 0; this.vy = 0; }
+        } else if (this.phase === 'hover') {
+          this.hoverT -= dt;
+          this.y += Math.sin(this.t * 18) * 14 * dt; // tense little shiver
+          if (this.hoverT <= 0) {
+            const sh = SG.ship;
+            const d = Math.hypot(sh.x - this.x, sh.y - this.y) || 1;
+            this.vx = (sh.x - this.x) / d * 460 * s; this.vy = (sh.y - this.y) / d * 460 * s;
+            this.phase = 'dive';
+            Audio2.sfx('blip');
+          }
+        }
+      },
+    });
+  },
+  // flying fish leaping out of the waves in big arcs (spawn y is ignored —
+  // they always burst up from below the screen)
+  tobiuoLeap() {
+    const s = SS();
+    const f = new Foe({
+      y: Engine.H + 40, vx: -230 * s, hp: 1, score: 120, size: 54, r: 19,
+      frames: ['sh_tobiuo_0', 'sh_tobiuo_1'], fps: 10,
+      vy: -rand(430, 560) * s, grav: 520 * s,
+      ai(dt) { this.vy += this.grav * dt; },
+    });
+    f.x = Engine.W * rand(0.55, 0.95) + 60;
+    return f;
+  },
+  // lantern bomber — crosses along the top, raining shots straight down
+  lanternTop(y) {
+    const s = SS();
+    return new Foe({
+      y: Engine.H * 0.12, vx: -130 * s, hp: 3, score: 240, size: 50, r: 20,
+      sprite: 'sh_lantern', shootT: 0.8,
+      ai(dt) {
+        this.y = Engine.H * 0.12 + Math.sin(this.t * 2) * 16 * s;
+        this.shootT -= dt * SDIFF.fire;
+        if (this.shootT <= 0 && this.x < Engine.W - 40 && this.x > 60) {
+          this.shootT = 1.25;
+          SG.eshots.push(new EShot(this.x, this.y + 16, 0, 230 * s, 'pearl', 5));
+          Audio2.sfx('blip');
+        }
+      },
+    });
+  },
+  // octopus gunner that backs away while firing (pressure from range)
+  octoBack(y) {
+    const s = SS();
+    return new Foe({
+      y, vx: -150 * s, hp: 4, score: 320, size: 70, r: 26,
+      frames: ['sh_octo_0', 'sh_octo_1'], fps: 4, phase: 'in',
+      ai(dt) {
+        if (this.phase === 'in' && this.x < Engine.W * 0.55) { this.phase = 'back'; }
+        if (this.phase === 'back') this.vx = 60 * s;
+        this.shootT -= dt * SDIFF.fire;
+        if (this.shootT <= 0) {
+          this.shootT = rand(1.3, 1.9);
+          const [vx, vy] = this.aimAtShip(220 * s);
+          for (const a of [-0.22, 0.22]) {
+            const c = Math.cos(a), sn = Math.sin(a);
+            SG.eshots.push(new EShot(this.x - 14, this.y, vx * c - vy * sn, vx * sn + vy * c, 'ink', 6));
+          }
+          Audio2.sfx('ink');
+        }
+      },
+    });
+  },
   // boss minion — tiny gull
   chick(y, vy) {
     const s = SS();
@@ -353,25 +428,39 @@ const FOES = {
 const SBOSS_CFG = {
   octo: {
     name: 'おおダコ提督', sprites: ['sh_boss_octo_0', 'sh_boss_octo_1'], fps: 3,
-    size: 190, r: 72, hp: 55, flip: false,
+    size: 190, r: 72, hp: 72, flip: false,
   },
   gull: {
     name: 'とっこう隊長・大カモメ', sprites: ['sh_boss_gull_0', 'sh_boss_gull_1'], fps: 6,
-    size: 200, r: 68, hp: 60, flip: false,
+    size: 200, r: 68, hp: 80, flip: false,
   },
   urchin: {
     name: 'ウニ大魔王', sprites: ['sh_boss_urchin_0', 'sh_boss_urchin_1'], fps: 3,
-    size: 215, r: 84, hp: 75, flip: false, final: true,
+    size: 215, r: 84, hp: 95, flip: false, final: true,
+  },
+  // ---- mid-bosses (placeholder art = enlarged grunts; swapped when the
+  //      dedicated Codex sprites arrive) ----
+  mid_tobiuo: {
+    name: 'トビウオ番長', sprites: ['sh_tobiuo_0', 'sh_tobiuo_1'], fps: 8,
+    size: 120, r: 46, hp: 24, flip: false, mid: true,
+  },
+  mid_mine: {
+    name: '大機雷トゲ丸', sprites: ['sh_mine'], fps: 1,
+    size: 130, r: 54, hp: 28, flip: false, mid: true, spin: true,
+  },
+  mid_lantern: {
+    name: 'ぼんぼり親方', sprites: ['sh_lantern'], fps: 1,
+    size: 140, r: 52, hp: 28, flip: false, mid: true,
   },
 };
 
 class SBoss {
-  constructor(type) {
+  constructor(type, hpMul = 1) {
     const c = SBOSS_CFG[type]; this.type = type; this.cfg = c;
     const s = SS();
     this.x = Engine.W + 140; this.y = Engine.H * 0.5;
     this.size = c.size * s; this.r = c.r * s;
-    this.hp = Math.round(c.hp * SDIFF.bossHp); this.maxHp = this.hp;
+    this.hp = Math.round(c.hp * SDIFF.bossHp * hpMul); this.maxHp = this.hp;
     this.t = 0; this.patT = 0; this.pat = 0; this.intro = true;
     this.dead = false; this.deadT = 0; this.flash = 0;
     this.vx = 0; this.vy = 0;
@@ -382,7 +471,8 @@ class SBoss {
     if (this.hp <= 0) { this.dead = true; this.deadT = 0; SG.onBossDown(this); }
     else if (!quiet && Math.random() < 0.3) Audio2.sfx('tink');
   }
-  rage() { return this.hp / this.maxHp < 0.35; }
+  rage() { return this.hp / this.maxHp < 0.33; }
+  phase() { const k = this.hp / this.maxHp; return k > 0.66 ? 1 : k > 0.33 ? 2 : 3; }
 
   update(dt) {
     this.t += dt;
@@ -409,57 +499,217 @@ class SBoss {
 
   // --- patterns per boss ---
   pat_octo(dt, s, sh) {
-    // weave vertically, 3-way ink + occasional aimed burst; rage: 5-way
-    this.y = Engine.H * 0.5 + Math.sin(this.t * 0.9) * Engine.H * 0.26;
+    // ph1: weave + 3-way ink / ph2: +5-way, bubble ring, rapid ink stream
+    // ph3(rage): +charge dash across the screen
+    const ph = this.phase();
+
+    // --- charge dash (rage): telegraph, sweep left at the player's row, return ---
+    if (ph >= 3) {
+      this.dashT = (this.dashT == null ? 4 : this.dashT) - dt;
+      if (this.dashSt === 'tel') {
+        this.telT -= dt;
+        if (this.telT <= 0) { this.dashSt = 'go'; this.dashY = sh.y; Audio2.sfx('boss'); }
+      } else if (this.dashSt === 'go') {
+        this.x -= 560 * s * dt;
+        this.y = approach(this.y, this.dashY, 300 * s * dt);
+        if (this.x < Engine.W * 0.16) this.dashSt = 'back';
+      } else if (this.dashSt === 'back') {
+        this.x += 360 * s * dt;
+        if (this.x >= Engine.W * 0.78) { this.x = Engine.W * 0.78; this.dashSt = null; this.dashT = 5; }
+      } else if (this.dashT <= 0) { this.dashSt = 'tel'; this.telT = 0.6; Audio2.sfx('blip'); }
+    }
+    if (this.dashSt !== 'go' && this.dashSt !== 'back') {
+      this.y = Engine.H * 0.5 + Math.sin(this.t * (ph >= 3 ? 1.2 : 0.9)) * Engine.H * 0.26;
+    }
+
+    // --- aimed ink arcs ---
     this.shoot1 = (this.shoot1 || 0) - dt * SDIFF.fire;
-    if (this.shoot1 <= 0) {
-      this.shoot1 = this.rage() ? 1.1 : 1.6;
+    if (this.shoot1 <= 0 && this.dashSt !== 'go') {
+      this.shoot1 = ph === 1 ? 1.6 : ph === 2 ? 1.25 : 1.0;
       const [vx, vy] = aimFrom(this.x - this.r * 0.5, this.y, sh, 230 * s);
-      const arcs = this.rage() ? [-0.5, -0.25, 0, 0.25, 0.5] : [-0.35, 0, 0.35];
+      const arcs = ph === 1 ? [-0.35, 0, 0.35] : [-0.5, -0.25, 0, 0.25, 0.5];
       for (const a of arcs) { const c = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x - this.r * 0.5, this.y, vx * c - vy * sn, vx * sn + vy * c, 'ink', 6)); }
       Audio2.sfx('ink');
     }
+    // --- bubble ring (ph2+) ---
     this.shoot2 = (this.shoot2 || 3) - dt * SDIFF.fire;
-    if (this.shoot2 <= 0) {
-      this.shoot2 = 4.2;
-      for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; SG.eshots.push(new EShot(this.x, this.y, Math.cos(a) * 150 * s, Math.sin(a) * 150 * s, 'bubble', 6)); }
+    if (this.shoot2 <= 0 && ph >= 2) {
+      this.shoot2 = ph === 2 ? 3.6 : 3.0;
+      const n = ph === 2 ? 10 : 12;
+      for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; SG.eshots.push(new EShot(this.x, this.y, Math.cos(a) * 150 * s, Math.sin(a) * 150 * s, 'bubble', 6)); }
       Audio2.sfx('boss');
+    }
+    // --- rapid ink stream (ph2+): 6 quick aimed shots with a slight fan ---
+    this.shoot3 = (this.shoot3 || 5) - dt * SDIFF.fire;
+    if (this.shoot3 <= 0 && ph >= 2 && this.dashSt !== 'go') { this.shoot3 = 5.2; this.burstN = 6; this.burstT = 0; }
+    if (this.burstN > 0) {
+      this.burstT -= dt;
+      if (this.burstT <= 0) {
+        this.burstT = 0.1; this.burstN--;
+        const [vx, vy] = aimFrom(this.x - this.r * 0.5, this.y, sh, 280 * s);
+        const a = (this.burstN - 3) * 0.07;
+        const c = Math.cos(a), sn = Math.sin(a);
+        SG.eshots.push(new EShot(this.x - this.r * 0.5, this.y, vx * c - vy * sn, vx * sn + vy * c, 'ink', 5));
+        Audio2.sfx('blip');
+      }
     }
   }
   pat_gull(dt, s, sh) {
-    // figure-8 sweeps + feather fans + summons chicks
-    this.y = Engine.H * 0.5 + Math.sin(this.t * 1.5) * Engine.H * 0.3;
-    this.x = Engine.W * 0.74 + Math.sin(this.t * 0.75) * Engine.W * 0.13;
+    // ph1: figure-8 + feather fans / ph2: +dive sweep with feather trail,
+    // 3 chicks / ph3(rage): 7-way fans + feather rain from above
+    const ph = this.phase();
+
+    // --- dive sweep (ph2+): telegraph, sweep left along the player's row ---
+    if (ph >= 2) {
+      this.sweepT = (this.sweepT == null ? 4.5 : this.sweepT) - dt;
+      if (this.sweepSt === 'tel') {
+        this.telT -= dt;
+        if (this.telT <= 0) { this.sweepSt = 'go'; this.sweepY = sh.y; Audio2.sfx('boss'); }
+      } else if (this.sweepSt === 'go') {
+        this.x -= 620 * s * dt;
+        this.y = approach(this.y, this.sweepY, 360 * s * dt);
+        this.trailT = (this.trailT || 0) - dt;
+        if (this.trailT <= 0) { this.trailT = 0.07; SG.eshots.push(new EShot(this.x + 30, this.y + 10, 40 * s, 150 * s, 'pearl', 4)); }
+        if (this.x < Engine.W * 0.12) this.sweepSt = 'back';
+      } else if (this.sweepSt === 'back') {
+        this.x += 420 * s * dt; this.y = approach(this.y, Engine.H * 0.4, 200 * s * dt);
+        if (this.x >= Engine.W * 0.74) { this.sweepSt = null; this.sweepT = ph === 3 ? 4.5 : 5.5; }
+      } else if (this.sweepT <= 0) { this.sweepSt = 'tel'; this.telT = 0.55; Audio2.sfx('blip'); }
+    }
+    if (this.sweepSt !== 'go' && this.sweepSt !== 'back') {
+      this.y = Engine.H * 0.5 + Math.sin(this.t * 1.5) * Engine.H * (ph >= 3 ? 0.34 : 0.3);
+      this.x = Engine.W * 0.74 + Math.sin(this.t * 0.75) * Engine.W * 0.13;
+    }
+
+    // --- feather fans ---
     this.shoot1 = (this.shoot1 || 1) - dt * SDIFF.fire;
-    if (this.shoot1 <= 0) {
-      this.shoot1 = this.rage() ? 0.9 : 1.3;
+    if (this.shoot1 <= 0 && this.sweepSt !== 'go') {
+      this.shoot1 = ph === 1 ? 1.3 : ph === 2 ? 1.1 : 0.95;
       const base = Math.atan2(sh.y - this.y, sh.x - this.x);
-      const n = this.rage() ? 5 : 3;
+      const n = ph === 1 ? 3 : ph === 2 ? 5 : 7;
       for (let i = 0; i < n; i++) {
-        const a = base + (i - (n - 1) / 2) * 0.22;
+        const a = base + (i - (n - 1) / 2) * 0.2;
         SG.eshots.push(new EShot(this.x - 20, this.y, Math.cos(a) * 250 * s, Math.sin(a) * 250 * s, 'pearl', 5));
       }
       Audio2.sfx('blip');
     }
+    // --- chick summons ---
     this.summon = (this.summon || 4) - dt * SDIFF.fire;
-    if (this.summon <= 0) { this.summon = this.rage() ? 4.5 : 6; SG.foes.push(FOES.chick(this.y - 60 * s, -40)); SG.foes.push(FOES.chick(this.y + 60 * s, 40)); Audio2.sfx('boss'); }
+    if (this.summon <= 0) {
+      this.summon = ph >= 3 ? 4.0 : 6;
+      SG.foes.push(FOES.chick(this.y - 60 * s, -40)); SG.foes.push(FOES.chick(this.y + 60 * s, 40));
+      if (ph >= 2) SG.foes.push(FOES.chick(this.y, 0));
+      Audio2.sfx('boss');
+    }
+    // --- feather rain (rage) ---
+    this.rain = (this.rain || 2) - dt * SDIFF.fire;
+    if (ph >= 3 && this.rain <= 0) {
+      this.rain = 3.8;
+      for (let i = 0; i < 6; i++) SG.eshots.push(new EShot(Engine.W * rand(0.3, 0.95), -20, rand(-30, 30) * s, rand(180, 240) * s, 'pearl', 5));
+      Audio2.sfx('boss');
+    }
   }
   pat_urchin(dt, s, sh) {
-    // slow drift + spiral rings; rage: faster spiral + aimed spreads
+    // ph1: 2-arm spiral + aimed spread / ph2: 3-arm + ring bursts
+    // ph3(rage): 4-arm, creeps closer, summons urchin mines
+    const ph = this.phase();
     this.y = Engine.H * 0.5 + Math.sin(this.t * 0.6) * Engine.H * 0.22;
-    this.spA = (this.spA || 0) + dt * (this.rage() ? 3.4 : 2.2);
+    const homeX = ph >= 3 ? Engine.W * 0.66 : Engine.W * 0.78;
+    this.x = approach(this.x, homeX, 40 * s * dt);
+
+    // --- spiral arms ---
+    this.spA = (this.spA || 0) + dt * (ph === 1 ? 2.2 : ph === 2 ? 2.8 : 3.4);
     this.shoot1 = (this.shoot1 || 0.4) - dt * SDIFF.fire;
     if (this.shoot1 <= 0) {
-      this.shoot1 = this.rage() ? 0.16 : 0.24;
-      const a = this.spA;
-      for (const o of [0, Math.PI]) SG.eshots.push(new EShot(this.x, this.y, Math.cos(a + o) * 170 * s, Math.sin(a + o) * 170 * s, 'spike', 5));
+      this.shoot1 = ph === 1 ? 0.24 : ph === 2 ? 0.2 : 0.16;
+      const arms = ph === 1 ? 2 : ph === 2 ? 3 : 4;
+      for (let i = 0; i < arms; i++) {
+        const a = this.spA + i / arms * Math.PI * 2;
+        SG.eshots.push(new EShot(this.x, this.y, Math.cos(a) * 170 * s, Math.sin(a) * 170 * s, 'spike', 5));
+      }
     }
+    // --- aimed spike spread ---
     this.shoot2 = (this.shoot2 || 2.5) - dt * SDIFF.fire;
     if (this.shoot2 <= 0) {
-      this.shoot2 = this.rage() ? 2.2 : 3.4;
+      this.shoot2 = ph === 1 ? 3.4 : ph === 2 ? 2.6 : 2.2;
       const [vx, vy] = aimFrom(this.x, this.y, sh, 240 * s);
-      for (const a of [-0.18, 0, 0.18]) { const c = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x, this.y, vx * c - vy * sn, vx * sn + vy * c, 'spike', 6)); }
+      const arcs = ph === 1 ? [-0.18, 0, 0.18] : [-0.32, -0.16, 0, 0.16, 0.32];
+      for (const a of arcs) { const c = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x, this.y, vx * c - vy * sn, vx * sn + vy * c, 'spike', 6)); }
       Audio2.sfx('boss');
+    }
+    // --- slow full ring (ph2+) — walls to weave through ---
+    this.shoot3 = (this.shoot3 || 3) - dt * SDIFF.fire;
+    if (this.shoot3 <= 0 && ph >= 2) {
+      this.shoot3 = ph === 2 ? 4.5 : 3.5;
+      const n = ph === 2 ? 16 : 20;
+      for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + this.spA; SG.eshots.push(new EShot(this.x, this.y, Math.cos(a) * 110 * s, Math.sin(a) * 110 * s, 'spike', 4)); }
+      Audio2.sfx('bomb');
+    }
+    // --- mine adds (rage) ---
+    this.summon = (this.summon || 3) - dt * SDIFF.fire;
+    if (ph >= 3 && this.summon <= 0) {
+      this.summon = 6;
+      SG.foes.push(FOES.mine(Engine.H * 0.25)); SG.foes.push(FOES.mine(Engine.H * 0.75));
+      Audio2.sfx('boss');
+    }
+  }
+
+  // --- mid-boss patterns ---
+  pat_mid_tobiuo(dt, s, sh) {
+    // sweeping arcs + occasional dash across the screen, twin bubble bursts
+    this.y = Engine.H * 0.5 + Math.sin(this.t * 1.7) * Engine.H * 0.3;
+    this.dashT = (this.dashT == null ? 3 : this.dashT) - dt;
+    if (this.dashT <= 0 && !this.dashing) { this.dashing = true; this.dashEnd = this.t + 0.7; Audio2.sfx('blip'); }
+    if (this.dashing) {
+      this.x -= 420 * s * dt;
+      if (this.t > this.dashEnd) { this.dashing = false; this.dashT = this.rage() ? 2.2 : 3.2; }
+    } else {
+      this.x = approach(this.x, Engine.W * 0.76, 220 * s * dt);
+    }
+    this.shoot1 = (this.shoot1 || 1) - dt * SDIFF.fire;
+    if (this.shoot1 <= 0) {
+      this.shoot1 = this.rage() ? 1.0 : 1.5;
+      const [vx, vy] = aimFrom(this.x - 20, this.y, sh, 210 * s);
+      for (const a of [-0.16, 0.16]) { const c2 = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x - 20, this.y, vx * c2 - vy * sn, vx * sn + vy * c2, 'bubble', 6)); }
+      Audio2.sfx('blip');
+    }
+  }
+  pat_mid_mine(dt, s, sh) {
+    // slow drifting spike hub: lazy rings, faster + aimed pair in rage
+    this.y = Engine.H * 0.5 + Math.sin(this.t * 0.8) * Engine.H * 0.24;
+    this.x = approach(this.x, Engine.W * 0.74, 140 * s * dt);
+    this.spinA = (this.spinA || 0) + dt * (this.rage() ? 2.2 : 1.4);
+    this.shoot1 = (this.shoot1 || 1.2) - dt * SDIFF.fire;
+    if (this.shoot1 <= 0) {
+      this.shoot1 = this.rage() ? 1.1 : 1.7;
+      const n = 8;
+      for (let i = 0; i < n; i++) { const a = this.spinA + i / n * Math.PI * 2; SG.eshots.push(new EShot(this.x, this.y, Math.cos(a) * 150 * s, Math.sin(a) * 150 * s, 'spike', 5)); }
+      Audio2.sfx('boss');
+    }
+    this.shoot2 = (this.shoot2 || 2.5) - dt * SDIFF.fire;
+    if (this.rage() && this.shoot2 <= 0) {
+      this.shoot2 = 2.0;
+      const [vx, vy] = aimFrom(this.x, this.y, sh, 230 * s);
+      SG.eshots.push(new EShot(this.x, this.y, vx, vy, 'spike', 6));
+    }
+  }
+  pat_mid_lantern(dt, s, sh) {
+    // patrols the upper half, rains shots downward; aimed ink in rage
+    this.y = Engine.H * 0.26 + Math.sin(this.t * 1.1) * Engine.H * 0.1;
+    this.x = Engine.W * 0.72 + Math.sin(this.t * 0.7) * Engine.W * 0.16;
+    this.shoot1 = (this.shoot1 || 0.8) - dt * SDIFF.fire;
+    if (this.shoot1 <= 0) {
+      this.shoot1 = this.rage() ? 0.55 : 0.85;
+      const drift = rand(-40, 40) * s;
+      SG.eshots.push(new EShot(this.x + rand(-30, 30) * s, this.y + 24, drift, 240 * s, 'pearl', 5));
+      Audio2.sfx('blip');
+    }
+    this.shoot2 = (this.shoot2 || 2.6) - dt * SDIFF.fire;
+    if (this.rage() && this.shoot2 <= 0) {
+      this.shoot2 = 2.2;
+      const [vx, vy] = aimFrom(this.x, this.y, sh, 220 * s);
+      SG.eshots.push(new EShot(this.x, this.y, vx, vy, 'ink', 6));
+      Audio2.sfx('ink');
     }
   }
 
@@ -469,7 +719,8 @@ class SBoss {
     const meta = Assets.size(name);
     const w = this.size, h = w * (meta.h / meta.w);
     const a = this.dead ? clamp(1 - this.deadT / 2.2, 0, 1) : 1;
-    drawSprite(ctx, name, this.x, this.y, { w, h, ax: 0.5, ay: 0.5, flip: c.flip, alpha: a, rot: this.dead ? this.deadT * 1.5 : 0 });
+    const rot = this.dead ? this.deadT * 1.5 : (c.spin ? this.t * 1.2 : 0);
+    drawSprite(ctx, name, this.x, this.y, { w, h, ax: 0.5, ay: 0.5, flip: c.flip, alpha: a, rot });
     if (this.flash > 0) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5;
       drawSprite(ctx, name, this.x, this.y, { w, h, ax: 0.5, ay: 0.5, flip: c.flip });

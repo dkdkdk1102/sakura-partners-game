@@ -8,8 +8,8 @@
    harder runs rank higher. */
 const SDIFFS = {
   easy:   { key: 'easy',   label: 'やさしい', bullet: 0.85, fire: 0.8,  bossHp: 0.85, hpAdd: 0, hearts: 4, bombs: 3, extraN: 0, scoreMul: 0.8 },
-  normal: { key: 'normal', label: 'ノーマル', bullet: 1.15, fire: 1.25, bossHp: 1.1,  hpAdd: 0, hearts: 3, bombs: 2, extraN: 0, scoreMul: 1.0 },
-  hard:   { key: 'hard',   label: 'ハード',   bullet: 1.45, fire: 1.7,  bossHp: 1.35, hpAdd: 1, hearts: 3, bombs: 2, extraN: 1, scoreMul: 1.4 },
+  normal: { key: 'normal', label: 'ノーマル', bullet: 1.25, fire: 1.4,  bossHp: 1.15, hpAdd: 0, hearts: 3, bombs: 2, extraN: 0, scoreMul: 1.0 },
+  hard:   { key: 'hard',   label: 'ハード',   bullet: 1.6,  fire: 2.0,  bossHp: 1.45, hpAdd: 1, hearts: 3, bombs: 2, extraN: 1, scoreMul: 1.5 },
 };
 window.SDIFF = SDIFFS.normal;
 
@@ -287,7 +287,7 @@ class SPlay {
       if (this.timer >= this.stage.bossAt) { this.state = 'warn'; this.bossWarnT = 2.2; SMusic.stop(); Audio2.sfx('boss'); }
     } else if (this.state === 'warn') {
       this.bossWarnT -= dt;
-      if (this.bossWarnT <= 0) { this.state = 'boss'; this.boss = new SBoss(this.stage.boss); SMusic.play('boss'); }
+      if (this.bossWarnT <= 0) { this.state = 'boss'; this.boss = new SBoss(this.stage.boss, this.stage.bossHpMul || 1); SMusic.play('boss'); }
     } else if (this.state === 'boss') {
       if (this.boss) this.boss.update(dt);
       if (this.boss && this.boss.dead && this.boss.deadT > 2.2) {
@@ -300,9 +300,14 @@ class SPlay {
       // consume only once the gate is open so an early tap stays buffered
       const tap2 = this.clearT > 1.2 ? Pointer.consume() : null;
       if (tap2 || (this.clearT > 1.2 && Input.pressed('jump'))) {
-        const carry = { score: this.score, power: this.ship.power, bombs: Math.min(this.ship.bombs + 1, 4), hearts: Math.min(this.ship.hearts + 1, 3) };
-        if (this.stageIdx + 1 < SSTAGES.length) Engine.setScene(new SPlay(this.stageIdx + 1, carry));
-        else Engine.setScene(new SEnding(this.score));
+        const we = this.stage.worldEnd;
+        const carry = {
+          score: this.score, power: this.ship.power,
+          bombs: we ? Math.min(this.ship.bombs + 1, 4) : this.ship.bombs,
+          hearts: we ? Math.min(this.ship.hearts + 1, SDIFF.hearts) : this.ship.hearts,
+        };
+        if (this.stage.final || this.stageIdx + 1 >= SSTAGES.length) Engine.setScene(new SEnding(this.score));
+        else Engine.setScene(new SPlay(this.stageIdx + 1, carry));
         return;
       }
     } else if (this.state === 'gameover') {
@@ -450,8 +455,8 @@ class SPlay {
       ctx.globalAlpha = a; ctx.textAlign = 'center';
       ctx.font = `900 ${Math.min(38, W * 0.05)}px ${FONT}`;
       ctx.lineWidth = 8; ctx.strokeStyle = '#fff';
-      ctx.strokeText(`ステージ${this.stageIdx + 1}　${this.stage.name}`, W / 2, H * 0.3);
-      ctx.fillStyle = '#2a6a9c'; ctx.fillText(`ステージ${this.stageIdx + 1}　${this.stage.name}`, W / 2, H * 0.3);
+      ctx.strokeText(this.stage.name, W / 2, H * 0.3);
+      ctx.fillStyle = '#2a6a9c'; ctx.fillText(this.stage.name, W / 2, H * 0.3);
       ctx.font = `700 ${16}px ${FONT}`; ctx.fillStyle = '#3a7aac';
       ctx.lineWidth = 5; ctx.strokeText(this.stage.sub, W / 2, H * 0.36); ctx.fillText(this.stage.sub, W / 2, H * 0.36);
       ctx.globalAlpha = 1;
@@ -485,13 +490,32 @@ class SPlay {
 
   _clearCard(ctx, W, H) {
     const a = clamp(this.clearT / 0.4, 0, 1);
+    if (!this.stage.worldEnd) {
+      // light card between sub-stages — keeps the pace up (facts wait for x-3)
+      ctx.save(); ctx.globalAlpha = a;
+      ctx.fillStyle = 'rgba(14,24,44,0.45)'; ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = 'center';
+      ctx.font = `900 ${Math.min(48, W * 0.062)}px ${FONT}`;
+      ctx.lineWidth = 9; ctx.strokeStyle = '#fff';
+      const label = `${this.stage.name.split(' ')[0]}　クリア！`;
+      ctx.strokeText(label, W / 2, H * 0.42);
+      ctx.fillStyle = '#ffd84a'; ctx.fillText(label, W / 2, H * 0.42);
+      ctx.font = `700 ${20}px ${FONT}`; ctx.lineWidth = 5;
+      ctx.strokeText(`スコア ${fmt(this.score)}`, W / 2, H * 0.52);
+      ctx.fillStyle = '#fff'; ctx.fillText(`スコア ${fmt(this.score)}`, W / 2, H * 0.52);
+      const pa = 0.65 + 0.2 * Math.sin(this.clearT * 2.5);
+      ctx.fillStyle = `rgba(255,255,255,${pa.toFixed(2)})`; ctx.font = `600 ${15}px ${FONT}`;
+      ctx.fillText('タップで つぎへ', W / 2, H * 0.62);
+      ctx.restore();
+      return;
+    }
     ctx.save(); ctx.globalAlpha = a;
     ctx.fillStyle = 'rgba(14,24,44,0.6)'; ctx.fillRect(0, 0, W, H);
     ctx.textAlign = 'center';
     ctx.font = `900 ${Math.min(46, W * 0.06)}px ${FONT}`;
     ctx.lineWidth = 9; ctx.strokeStyle = '#fff';
-    ctx.strokeText('ステージクリア！', W / 2, H * 0.18);
-    ctx.fillStyle = '#ffd84a'; ctx.fillText('ステージクリア！', W / 2, H * 0.18);
+    ctx.strokeText('ワールドクリア！', W / 2, H * 0.18);
+    ctx.fillStyle = '#ffd84a'; ctx.fillText('ワールドクリア！', W / 2, H * 0.18);
     const f = (window.IZU_FACTS || []).find((x) => x.id === this.stage.factId);
     const bw = Math.min(640, W * 0.88), bx = (W - bw) / 2, by = H * 0.25, bh = H * 0.46;
     ctx.fillStyle = 'rgba(255,255,255,0.94)'; roundRect(ctx, bx, by, bw, bh, 18); ctx.fill();
