@@ -1036,6 +1036,30 @@ window.ATLAS = {
   "w": 96,
   "h": 96
  },
+ "sh_mid_tobiuo_0": {
+  "w": 560,
+  "h": 420
+ },
+ "sh_mid_tobiuo_1": {
+  "w": 560,
+  "h": 420
+ },
+ "sh_mid_mine_0": {
+  "w": 560,
+  "h": 420
+ },
+ "sh_mid_mine_1": {
+  "w": 560,
+  "h": 420
+ },
+ "sh_mid_lantern_0": {
+  "w": 560,
+  "h": 420
+ },
+ "sh_mid_lantern_1": {
+  "w": 560,
+  "h": 420
+ },
  "t_dirt": {
   "w": 94,
   "h": 94

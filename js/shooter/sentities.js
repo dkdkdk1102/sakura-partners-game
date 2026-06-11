@@ -438,19 +438,18 @@ const SBOSS_CFG = {
     name: 'ウニ大魔王', sprites: ['sh_boss_urchin_0', 'sh_boss_urchin_1'], fps: 3,
     size: 215, r: 84, hp: 95, flip: false, final: true,
   },
-  // ---- mid-bosses (placeholder art = enlarged grunts; swapped when the
-  //      dedicated Codex sprites arrive) ----
+  // ---- mid-bosses ---------------------------------------------------------
   mid_tobiuo: {
-    name: 'トビウオ番長', sprites: ['sh_tobiuo_0', 'sh_tobiuo_1'], fps: 8,
-    size: 120, r: 46, hp: 24, flip: false, mid: true,
+    name: 'トビウオ番長', sprites: ['sh_mid_tobiuo_0', 'sh_mid_tobiuo_1'], fps: 8,
+    size: 158, r: 54, hp: 24, flip: false, mid: true,
   },
   mid_mine: {
-    name: '大機雷トゲ丸', sprites: ['sh_mine'], fps: 1,
-    size: 130, r: 54, hp: 28, flip: false, mid: true, spin: true,
+    name: '大機雷トゲ丸', sprites: ['sh_mid_mine_0', 'sh_mid_mine_1'], fps: 3,
+    size: 168, r: 62, hp: 28, flip: false, mid: true, spin: false,
   },
   mid_lantern: {
-    name: 'ぼんぼり親方', sprites: ['sh_lantern'], fps: 1,
-    size: 140, r: 52, hp: 28, flip: false, mid: true,
+    name: 'ぼんぼり親方', sprites: ['sh_mid_lantern_0', 'sh_mid_lantern_1'], fps: 3,
+    size: 168, r: 58, hp: 28, flip: false, mid: true,
   },
 };
 
