@@ -99,64 +99,40 @@ class Ship {
     const a = this.iframes > 0 ? 0.55 : 1;     // steady translucency, no strobe
     ctx.save();
     ctx.translate(this.x, this.y);
-    ctx.rotate(this.bank);
+    ctx.rotate(this.bank * 0.5);               // art has bank poses; just a hint of tilt
     ctx.globalAlpha = a;
-    const u = 1.05 * s; // unit scale
+    const u = 1.05 * s;
 
-    // -- thruster flame (animated, additive) --
-    const fl = (14 + Math.sin(this.t * 31) * 4 + Math.abs(this.vy) * 0.012) * u;
+    // -- thruster flame behind the pod (animated, additive) --
+    const fl = (16 + Math.sin(this.t * 31) * 4 + Math.abs(this.vy) * 0.012) * u;
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
-    const fg = ctx.createRadialGradient(-34 * u, 0, 2, -34 * u, 0, fl * 1.6);
-    fg.addColorStop(0, 'rgba(255,210,120,0.9)'); fg.addColorStop(1, 'rgba(255,110,40,0)');
-    ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(-34 * u, 0, fl * 1.6, 0, 6.29); ctx.fill();
+    const fg = ctx.createRadialGradient(-46 * u, 4 * u, 2, -46 * u, 4 * u, fl * 1.5);
+    fg.addColorStop(0, 'rgba(255,210,120,0.85)'); fg.addColorStop(1, 'rgba(255,110,40,0)');
+    ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(-46 * u, 4 * u, fl * 1.5, 0, 6.29); ctx.fill();
     ctx.fillStyle = 'rgba(255,170,70,0.95)';
-    ctx.beginPath(); ctx.moveTo(-30 * u, -6 * u); ctx.lineTo(-30 * u - fl, 0); ctx.lineTo(-30 * u, 6 * u); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-42 * u, -2 * u); ctx.lineTo(-42 * u - fl, 4 * u); ctx.lineTo(-42 * u, 10 * u); ctx.closePath(); ctx.fill();
     ctx.fillStyle = 'rgba(255,245,200,0.95)';
-    ctx.beginPath(); ctx.moveTo(-30 * u, -3 * u); ctx.lineTo(-30 * u - fl * 0.55, 0); ctx.lineTo(-30 * u, 3 * u); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-42 * u, 1 * u); ctx.lineTo(-42 * u - fl * 0.55, 4 * u); ctx.lineTo(-42 * u, 7 * u); ctx.closePath(); ctx.fill();
     ctx.restore();
 
-    // -- wings (back-swept, sakura pink trim) --
-    ctx.fillStyle = '#d8e4f0'; ctx.strokeStyle = '#3a4a5c'; ctx.lineWidth = 2 * u;
-    ctx.beginPath(); ctx.moveTo(-8 * u, -10 * u); ctx.lineTo(-30 * u, -26 * u); ctx.lineTo(-26 * u, -6 * u); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-8 * u, 12 * u); ctx.lineTo(-30 * u, 28 * u); ctx.lineTo(-26 * u, 8 * u); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#ff9eb8';
-    ctx.beginPath(); ctx.moveTo(-13 * u, -11 * u); ctx.lineTo(-26 * u, -21 * u); ctx.lineTo(-24 * u, -8 * u); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(-13 * u, 13 * u); ctx.lineTo(-26 * u, 23 * u); ctx.lineTo(-24 * u, 10 * u); ctx.closePath(); ctx.fill();
+    // -- the rocket pod itself (3 bank poses from the art) --
+    const pose = this.vy < -70 ? 'sh_ship_up' : this.vy > 70 ? 'sh_ship_down' : 'sh_ship_0';
+    drawSprite(ctx, pose, 0, 0, { w: 124 * u, h: 83 * u, ax: 0.5, ay: 0.5 });
 
-    // -- pod body (capsule) --
-    const bg = ctx.createLinearGradient(0, -20 * u, 0, 22 * u);
-    bg.addColorStop(0, '#ffffff'); bg.addColorStop(0.55, '#e8eef6'); bg.addColorStop(1, '#b8c6d8');
-    ctx.fillStyle = bg; ctx.strokeStyle = '#3a4a5c'; ctx.lineWidth = 2.4 * u;
-    roundRect(ctx, -32 * u, -14 * u, 64 * u, 32 * u, 16 * u); ctx.fill(); ctx.stroke();
-    // belly stripe + rivets
-    ctx.fillStyle = '#ff7fa6'; roundRect(ctx, -28 * u, 8 * u, 52 * u, 7 * u, 4 * u); ctx.fill();
-    ctx.fillStyle = '#9fb2c6';
-    for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc((-18 + i * 14) * u, 2 * u, 1.6 * u, 0, 6.29); ctx.fill(); }
-
-    // -- pilot rabbit (open cockpit) --
-    drawSprite(ctx, 'player_00', -2 * u, -8 * u, { w: 30 * u, h: 30 * u, ax: 0.5, ay: 1 });
-    // windshield arc
-    ctx.strokeStyle = 'rgba(140,200,240,0.95)'; ctx.lineWidth = 3.4 * u;
-    ctx.beginPath(); ctx.arc(2 * u, -10 * u, 17 * u, -Math.PI * 0.92, -Math.PI * 0.18); ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.4 * u;
-    ctx.beginPath(); ctx.arc(2 * u, -10 * u, 14.5 * u, -Math.PI * 0.85, -Math.PI * 0.45); ctx.stroke();
-
-    // -- nose cannon --
-    ctx.fillStyle = '#5a6a7e'; roundRect(ctx, 26 * u, -4 * u, 14 * u, 8 * u, 3 * u); ctx.fill();
-    ctx.fillStyle = '#ffd84a'; ctx.fillRect(36 * u, -2 * u, 4 * u, 4 * u);
+    // -- muzzle flash at the nose --
     if (this.muzzle > 0) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      const mg = ctx.createRadialGradient(46 * u, 0, 1, 46 * u, 0, 14 * u);
+      const mg = ctx.createRadialGradient(58 * u, 2 * u, 1, 58 * u, 2 * u, 15 * u);
       mg.addColorStop(0, 'rgba(255,255,200,0.95)'); mg.addColorStop(1, 'rgba(255,180,60,0)');
-      ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(46 * u, 0, 14 * u, 0, 6.29); ctx.fill();
+      ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(58 * u, 2 * u, 15 * u, 0, 6.29); ctx.fill();
       ctx.restore();
     }
 
     // -- shield ring while invulnerable (steady) --
     if (this.iframes > 0) {
       ctx.strokeStyle = 'rgba(120,220,255,0.55)'; ctx.lineWidth = 2.5 * u;
-      ctx.beginPath(); ctx.arc(0, -2 * u, 42 * u, 0, 6.29); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, 52 * u, 0, 6.29); ctx.stroke();
     }
     ctx.restore();
   }
@@ -199,17 +175,16 @@ class EShot {
     if (this.x < -m || this.x > Engine.W + m || this.y < -m || this.y > Engine.H + m) this.dead = true;
   }
   render(ctx) {
-    const s = SS();
-    if (this.kind === 'bubble') {
-      drawSprite(ctx, 'bubble_0', this.x, this.y, { w: this.r * 3.4, h: this.r * 3.4, ax: 0.5, ay: 0.5, alpha: 0.95 });
-      return;
-    }
-    const col = this.kind === 'pearl' ? ['rgba(255,255,255,1)', 'rgba(200,230,255,0.85)', 'rgba(140,180,255,0)']
-                                      : ['rgba(255,240,240,1)', 'rgba(255,90,120,0.9)', 'rgba(180,30,80,0)'];
-    const g = ctx.createRadialGradient(this.x, this.y, 1, this.x, this.y, this.r * 2.4);
-    g.addColorStop(0, col[0]); g.addColorStop(0.4, col[1]); g.addColorStop(1, col[2]);
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(this.x, this.y, this.r * 2.2, 0, 6.29); ctx.fill();
+    const SPR = { bubble: 'sh_blt_bubble', spike: 'sh_blt_spine', ink: 'sh_blt_ink', pearl: 'sh_blt_feather' };
+    const GLOW = { bubble: 'rgba(140,210,255,0.5)', spike: 'rgba(220,120,255,0.5)', ink: 'rgba(120,90,200,0.45)', pearl: 'rgba(255,255,220,0.5)' };
+    // soft additive halo so bullets read against any backdrop
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(this.x, this.y, 1, this.x, this.y, this.r * 2.6);
+    g.addColorStop(0, GLOW[this.kind] || GLOW.spike); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, this.r * 2.6, 0, 6.29); ctx.fill();
+    ctx.restore();
+    const rot = (this.kind === 'spike' || this.kind === 'pearl') ? Math.atan2(this.vy, this.vx) : this.t * 1.5;
+    drawSprite(ctx, SPR[this.kind] || SPR.spike, this.x, this.y, { w: this.r * 4.2, h: this.r * 4.2, ax: 0.5, ay: 0.5, rot });
   }
 }
 
@@ -220,7 +195,7 @@ class Foe {
   constructor(o) {
     Object.assign(this, {
       x: Engine.W + 60, y: Engine.H / 2, vx: -120, vy: 0, hp: 1, score: 100,
-      sprite: 'gull_0', frames: null, fps: 8, size: 52, r: 24, t: rand(0, 6),
+      sprite: 'sh_gull_0', frames: null, fps: 8, size: 52, r: 24, t: rand(0, 6),
       shootT: rand(1, 2.4), dead: false, flash: 0, ground: false,
     }, o);
     this.size *= SS(); this.r *= SS();
@@ -268,7 +243,7 @@ const FOES = {
     const s = SS();
     return new Foe({
       y, vx: -(170 + (opts.spd || 0)) * s, hp: 1, score: 100, size: 56,
-      frames: ['gull_0', 'gull_1', 'gull_2'], r: 22,
+      frames: ['sh_gull_0', 'sh_gull_1'], r: 22,
       amp: (opts.amp != null ? opts.amp : 70) * s, frq: opts.frq || 2.6,
       ai(dt) { this.vy = Math.cos(this.t * this.frq) * this.amp * this.frq; },
     });
@@ -277,8 +252,8 @@ const FOES = {
   fish(y) {
     const s = SS();
     return new Foe({
-      y, vx: -300 * s, hp: 1, score: 80, size: 46, r: 18,
-      frames: ['fish_0', 'fish_1', 'fish_2'], fps: 10,
+      y, vx: -300 * s, hp: 1, score: 80, size: 52, r: 18,
+      frames: ['sh_tobiuo_0', 'sh_tobiuo_1'], fps: 10,
     });
   },
   // jellyfish — slow float, aimed bubble
@@ -303,12 +278,12 @@ const FOES = {
   mine(y) {
     const s = SS();
     return new Foe({
-      y, vx: -110 * s, hp: 2, score: 200, size: 50, r: 22,
-      sprite: 'spike_urchin', burst: true,
+      y, vx: -110 * s, hp: 2, score: 200, size: 54, r: 22,
+      sprite: 'sh_mine', burst: true,
       ai(dt) { this.vy = Math.sin(this.t * 1.2) * 26 * s; this.spin = this.t * 1.5; },
       render(ctx) {
-        drawSprite(ctx, 'spike_urchin', this.x, this.y, { w: this.size, h: this.size, ax: 0.5, ay: 0.5, rot: this.spin || 0 });
-        if (this.flash > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.55; drawSprite(ctx, 'spike_urchin', this.x, this.y, { w: this.size, h: this.size, ax: 0.5, ay: 0.5, rot: this.spin || 0 }); ctx.restore(); }
+        drawSprite(ctx, 'sh_mine', this.x, this.y, { w: this.size, h: this.size, ax: 0.5, ay: 0.5, rot: this.spin || 0 });
+        if (this.flash > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.55; drawSprite(ctx, 'sh_mine', this.x, this.y, { w: this.size, h: this.size, ax: 0.5, ay: 0.5, rot: this.spin || 0 }); ctx.restore(); }
       },
     });
   },
@@ -316,8 +291,8 @@ const FOES = {
   octo(y) {
     const s = SS();
     return new Foe({
-      y, vx: -60 * s, hp: 5, score: 350, size: 64, r: 26,
-      frames: ['octo_0', 'octo_1', 'octo_2', 'octo_3'], fps: 5, flip: true,
+      y, vx: -60 * s, hp: 5, score: 350, size: 74, r: 28,
+      frames: ['sh_octo_0', 'sh_octo_1'], fps: 4,
       ai(dt) {
         if (this.x < Engine.W * 0.78) this.vx = -26 * s;
         this.shootT -= dt * SDIFF.fire;
@@ -326,7 +301,7 @@ const FOES = {
           const [vx, vy] = this.aimAtShip(210 * s);
           for (const a of [-0.3, 0, 0.3]) {
             const c = Math.cos(a), sn = Math.sin(a);
-            SG.eshots.push(new EShot(this.x - 14, this.y, vx * c - vy * sn, vx * sn + vy * c, 'spike', 6));
+            SG.eshots.push(new EShot(this.x - 14, this.y, vx * c - vy * sn, vx * sn + vy * c, 'ink', 6));
           }
           Audio2.sfx('ink');
         }
@@ -338,16 +313,11 @@ const FOES = {
   ghost(y) {
     const s = SS();
     return new Foe({
-      y, vx: -120 * s, hp: 2, score: 180, size: 52, r: 22,
-      frames: ['ghost_1', 'ghost_2'], fps: 4,
+      y, vx: -120 * s, hp: 2, score: 180, size: 56, r: 22,
+      frames: ['sh_ghost_0', 'sh_ghost_1'], fps: 4,
       ai(dt) {
         const sh = SG.ship;
         this.vy = approach(this.vy, sign(sh.y - this.y) * 90 * s, 220 * s * dt);
-      },
-      render(ctx) {
-        const name = this.frame();
-        drawSprite(ctx, name, this.x, this.y, { w: this.size, h: this.size * 1.05, ax: 0.5, ay: 0.5 });
-        if (this.flash > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.55; drawSprite(ctx, name, this.x, this.y, { w: this.size, h: this.size * 1.05, ax: 0.5, ay: 0.5 }); ctx.restore(); }
       },
     });
   },
@@ -355,15 +325,15 @@ const FOES = {
   lantern(y) {
     const s = SS();
     return new Foe({
-      y, vx: -95 * s, hp: 3, score: 220, size: 46, r: 20,
-      sprite: 'prop_lantern',
+      y, vx: -95 * s, hp: 3, score: 220, size: 50, r: 20,
+      sprite: 'sh_lantern',
       ai(dt) {
         this.vy = Math.sin(this.t * 2.2) * 30 * s;
         this.shootT -= dt * SDIFF.fire;
         if (this.shootT <= 0) {
           this.shootT = rand(1.8, 2.6);
           const [vx, vy] = this.aimAtShip(180 * s);
-          SG.eshots.push(new EShot(this.x, this.y, vx, vy, 'pearl', 6));
+          SG.eshots.push(new EShot(this.x, this.y, vx, vy, 'bubble', 6));
           Audio2.sfx('blip');
         }
       },
@@ -373,8 +343,8 @@ const FOES = {
   chick(y, vy) {
     const s = SS();
     return new Foe({
-      y, vx: -240 * s, vy: (vy || 0) * s, hp: 1, score: 60, size: 40, r: 16,
-      frames: ['gull_0', 'gull_1', 'gull_2'], fps: 10,
+      y, vx: -240 * s, vy: (vy || 0) * s, hp: 1, score: 60, size: 42, r: 16,
+      frames: ['sh_gull_0', 'sh_gull_1'], fps: 10,
     });
   },
 };
@@ -382,16 +352,16 @@ const FOES = {
 // ---------------------------------------------------------------- bosses ----
 const SBOSS_CFG = {
   octo: {
-    name: 'おおダコ提督', sprites: ['octo_0', 'octo_1', 'octo_2', 'octo_3'], fps: 5,
-    size: 170, r: 70, hp: 55, flip: true,
+    name: 'おおダコ提督', sprites: ['sh_boss_octo_0', 'sh_boss_octo_1'], fps: 3,
+    size: 190, r: 72, hp: 55, flip: false,
   },
   gull: {
-    name: 'とっこう隊長・大カモメ', sprites: ['gull_0', 'gull_1', 'gull_2'], fps: 9,
-    size: 180, r: 66, hp: 60, flip: false,
+    name: 'とっこう隊長・大カモメ', sprites: ['sh_boss_gull_0', 'sh_boss_gull_1'], fps: 6,
+    size: 200, r: 68, hp: 60, flip: false,
   },
   urchin: {
-    name: 'ウニ大魔王', sprites: ['boss_urchin_0', 'boss_urchin_1'], fps: 4,
-    size: 200, r: 84, hp: 75, flip: false, final: true,
+    name: 'ウニ大魔王', sprites: ['sh_boss_urchin_0', 'sh_boss_urchin_1'], fps: 3,
+    size: 215, r: 84, hp: 75, flip: false, final: true,
   },
 };
 
@@ -446,7 +416,7 @@ class SBoss {
       this.shoot1 = this.rage() ? 1.1 : 1.6;
       const [vx, vy] = aimFrom(this.x - this.r * 0.5, this.y, sh, 230 * s);
       const arcs = this.rage() ? [-0.5, -0.25, 0, 0.25, 0.5] : [-0.35, 0, 0.35];
-      for (const a of arcs) { const c = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x - this.r * 0.5, this.y, vx * c - vy * sn, vx * sn + vy * c, 'spike', 6)); }
+      for (const a of arcs) { const c = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x - this.r * 0.5, this.y, vx * c - vy * sn, vx * sn + vy * c, 'ink', 6)); }
       Audio2.sfx('ink');
     }
     this.shoot2 = (this.shoot2 || 3) - dt * SDIFF.fire;
@@ -488,7 +458,7 @@ class SBoss {
     if (this.shoot2 <= 0) {
       this.shoot2 = this.rage() ? 2.2 : 3.4;
       const [vx, vy] = aimFrom(this.x, this.y, sh, 240 * s);
-      for (const a of [-0.18, 0, 0.18]) { const c = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x, this.y, vx * c - vy * sn, vx * sn + vy * c, 'pearl', 6)); }
+      for (const a of [-0.18, 0, 0.18]) { const c = Math.cos(a), sn = Math.sin(a); SG.eshots.push(new EShot(this.x, this.y, vx * c - vy * sn, vx * sn + vy * c, 'spike', 6)); }
       Audio2.sfx('boss');
     }
   }

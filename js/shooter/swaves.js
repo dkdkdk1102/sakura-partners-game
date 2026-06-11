@@ -7,7 +7,7 @@ const RY = (k) => Engine.H * k;
 
 const SSTAGES = [
   {
-    name: '城ヶ崎かいがん', sub: 'なみの うえを ゆけ！', bg: 'bg_jogasaki', night: false,
+    name: '城ヶ崎かいがん', sub: 'なみの うえを ゆけ！', bg: 'sh_bg_coast', night: false,
     music: 'sky', boss: 'octo', factId: 'jogasaki', clearSprite: 'l_lighthouse2',
     bossAt: 58,
     waves: [
@@ -34,7 +34,7 @@ const SSTAGES = [
     ],
   },
   {
-    name: '大室山 じょうくう', sub: 'くもを こえて', bg: 'bg_omuro', night: false,
+    name: '大室山 じょうくう', sub: 'くもを こえて', bg: 'sh_bg_sky', night: false,
     music: 'sky', boss: 'gull', factId: 'omuro', clearSprite: 'l_omuro_big',
     bossAt: 62,
     waves: [
@@ -63,7 +63,7 @@ const SSTAGES = [
     ],
   },
   {
-    name: 'よるの 伊東おんせん', sub: 'さいごの たたかい', bg: 'bg_ito_onsen', night: true,
+    name: 'よるの 伊東おんせん', sub: 'さいごの たたかい', bg: 'sh_bg_night', night: true,
     music: 'night', boss: 'urchin', factId: 'ito_onsen', clearSprite: 'ryokan',
     bossAt: 66,
     waves: [

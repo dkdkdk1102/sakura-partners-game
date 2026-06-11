@@ -63,20 +63,16 @@ class SBackdrop {
     const W = Engine.W, H = Engine.H;
     const img = Assets.get(this.stage.bg);
     if (img && img.width) {
+      // the art loops seamlessly (left/right edge columns are pixel-identical),
+      // so a straight repeat is all we need
       const dh = Math.max(H, W / (img.width / img.height));
       const dw = dh * (img.width / img.height);
-      // mirror-tile (normal, flipped, normal, …) so the loop is seamless —
-      // the art's left and right edges don't match each other
-      const off = this.x % (2 * dw);
+      const off = this.x % dw;
       const y = (H - dh) * 0.5;
-      for (let k = Math.floor(off / dw) - 1; (k * dw - off) < W; k++) {
-        const x = k * dw - off;
-        if (x + dw < 0) continue;
-        if (((k % 2) + 2) % 2 === 0) ctx.drawImage(img, x, y, dw + 1, dh);
-        else { ctx.save(); ctx.translate(x + dw, y); ctx.scale(-1, 1); ctx.drawImage(img, 0, 0, dw + 1, dh); ctx.restore(); }
-      }
+      for (let x = -off; x < W; x += dw) ctx.drawImage(img, x, y, dw + 1, dh);
     } else { ctx.fillStyle = '#9fd8ff'; ctx.fillRect(0, 0, W, H); }
-    if (this.stage.night) { ctx.fillStyle = 'rgba(18,16,52,0.42)'; ctx.fillRect(0, 0, W, H); }
+    // the night art is already dark — just a whisper of blue for depth
+    if (this.stage.night) { ctx.fillStyle = 'rgba(18,16,52,0.12)'; ctx.fillRect(0, 0, W, H); }
     // (no sprite cloud layer — it doubled up against the painted clouds)
     // speed streaks (subtle, additive)
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.12;
