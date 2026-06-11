@@ -64,6 +64,7 @@ const UpdateNotice = {
   close: null,
   open(auto = false) {
     this.active = true; this.auto = auto;
+    if (typeof document !== 'undefined' && document.body) document.body.classList.add('notice-open');
     if (!this.close) this.close = new Button('とじる', 0, 0, 180, 52, { color: '#ff8bb0', size: 20 });
     this.layout(Engine.W, Engine.H);
   },
@@ -72,6 +73,7 @@ const UpdateNotice = {
   },
   dismiss() {
     this.active = false;
+    if (typeof document !== 'undefined' && document.body) document.body.classList.remove('notice-open');
     if (window.Store) Store.set('update_seen_' + this.version, true);
   },
   layout(W, H) {

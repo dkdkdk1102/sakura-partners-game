@@ -27,6 +27,12 @@ html, body {
 .topbtn:hover { background: rgba(255,255,255,0.34); }
 .topbtn:active { transform: scale(0.92); }
 .topbtn.off { opacity: 0.5; }
+body.notice-open .topbar,
+body.notice-open .controls,
+body.notice-open .bombwrap {
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* ---- touch controls ---- */
 .controls {
