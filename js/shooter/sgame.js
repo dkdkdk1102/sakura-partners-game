@@ -7,9 +7,9 @@
    tough-foe HP, player hearts/bombs, extra spawns, and a score multiplier so
    harder runs rank higher. */
 const SDIFFS = {
-  easy:   { key: 'easy',   label: 'やさしい', bullet: 0.85, fire: 0.8,  bossHp: 0.85, hpAdd: 0, hearts: 4, bombs: 3, extraN: 0, scoreMul: 0.8 },
-  normal: { key: 'normal', label: 'ノーマル', bullet: 1.25, fire: 1.4,  bossHp: 1.15, hpAdd: 0, hearts: 3, bombs: 2, extraN: 0, scoreMul: 1.0 },
-  hard:   { key: 'hard',   label: 'ハード',   bullet: 1.6,  fire: 2.0,  bossHp: 1.45, hpAdd: 1, hearts: 3, bombs: 2, extraN: 1, scoreMul: 1.5 },
+  easy:   { key: 'easy',   label: 'やさしい', bullet: 0.95, fire: 0.8,  bossHp: 0.85, hpAdd: 0, hearts: 4, bombs: 3, extraN: 0, scoreMul: 0.8 },
+  normal: { key: 'normal', label: 'ノーマル', bullet: 1.4,  fire: 1.4,  bossHp: 1.15, hpAdd: 0, hearts: 3, bombs: 2, extraN: 0, scoreMul: 1.0 },
+  hard:   { key: 'hard',   label: 'ハード',   bullet: 1.8,  fire: 2.0,  bossHp: 1.45, hpAdd: 1, hearts: 3, bombs: 2, extraN: 1, scoreMul: 1.5 },
 };
 window.SDIFF = SDIFFS.normal;
 
@@ -229,8 +229,14 @@ class SPlay {
     this.fx.boomAt(foe.x, foe.y, foe.size / (52 * SS()));
     this.fx.text(foe.x, foe.y - 24, `+${pts}`, '#ffe9a8');
     if (this.combo >= 3) this.fx.text(foe.x, foe.y - 46, `×${this.combo} コンボ！`, '#7fd0ff');
-    if (foe.burst) { // urchin mine spits 6 slow spikes — dodge!
-      for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + 0.3; this.eshots.push(new EShot(foe.x, foe.y, Math.cos(a) * 140 * SS(), Math.sin(a) * 140 * SS(), 'spike', 5)); }
+    if (foe.burst) { // urchin mine pops into a randomized spray of spikes — dodge!
+      const n = 7 + Math.floor(Math.random() * 3) + (SDIFF.extraN ? 2 : 0);
+      const base = Math.random() * Math.PI * 2;
+      for (let i = 0; i < n; i++) {
+        const a = base + i / n * Math.PI * 2 + rand(-0.14, 0.14);
+        const sp = rand(115, 215) * SS();
+        this.eshots.push(new EShot(foe.x, foe.y, Math.cos(a) * sp, Math.sin(a) * sp, 'spike', 5));
+      }
     }
     if (Math.random() < 0.12) this.pickups.push(new Pickup(foe.x, foe.y, 'mikan'));
   }
@@ -326,7 +332,7 @@ class SPlay {
       const r = this.bombWave;
       this.eshots = this.eshots.filter((b) => Math.hypot(b.x - this.bombX, b.y - this.bombY) > r);
       for (const f of this.foes) if (!f.dead && Math.hypot(f.x - this.bombX, f.y - this.bombY) < r) f.damage(15 * dt, true);
-      if (this.boss && !this.boss.intro && Math.hypot(this.boss.x - this.bombX, this.boss.y - this.bombY) < r) this.boss.damage(8 * dt, true);
+      if (this.boss && !this.boss.intro && Math.hypot(this.boss.x - this.bombX, this.boss.y - this.bombY) < r) this.boss.damage(22 * dt, true);
       if (r > Math.max(Engine.W, Engine.H) * 1.2) this.bombWave = 0;
     }
 

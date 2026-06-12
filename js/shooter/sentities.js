@@ -428,28 +428,28 @@ const FOES = {
 const SBOSS_CFG = {
   octo: {
     name: 'おおダコ提督', sprites: ['sh_boss_octo_0', 'sh_boss_octo_1'], fps: 3,
-    size: 190, r: 72, hp: 72, flip: false,
+    size: 190, r: 72, hp: 200, flip: false,
   },
   gull: {
     name: 'とっこう隊長・大カモメ', sprites: ['sh_boss_gull_0', 'sh_boss_gull_1'], fps: 6,
-    size: 200, r: 68, hp: 80, flip: false,
+    size: 200, r: 68, hp: 230, flip: false,
   },
   urchin: {
     name: 'ウニ大魔王', sprites: ['sh_boss_urchin_0', 'sh_boss_urchin_1'], fps: 3,
-    size: 215, r: 84, hp: 95, flip: false, final: true,
+    size: 215, r: 84, hp: 270, flip: false, final: true,
   },
   // ---- mid-bosses ---------------------------------------------------------
   mid_tobiuo: {
     name: 'トビウオ番長', sprites: ['sh_mid_tobiuo_0', 'sh_mid_tobiuo_1'], fps: 8,
-    size: 158, r: 54, hp: 24, flip: false, mid: true,
+    size: 158, r: 54, hp: 70, flip: false, mid: true,
   },
   mid_mine: {
     name: '大機雷トゲ丸', sprites: ['sh_mid_mine_0', 'sh_mid_mine_1'], fps: 3,
-    size: 168, r: 62, hp: 28, flip: false, mid: true, spin: false,
+    size: 168, r: 62, hp: 80, flip: false, mid: true, spin: false,
   },
   mid_lantern: {
     name: 'ぼんぼり親方', sprites: ['sh_mid_lantern_0', 'sh_mid_lantern_1'], fps: 3,
-    size: 168, r: 58, hp: 28, flip: false, mid: true,
+    size: 168, r: 58, hp: 80, flip: false, mid: true,
   },
 };
 
