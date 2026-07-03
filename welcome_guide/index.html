@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ようこそ｜気持ちよく暮らすためのご案内｜さくらパートナーズ</title>
+<style>
+  :root{
+    /* izu-ito.com ブランド: マゼンタ系ピンク #df0080 / 白・グレー基調 */
+    --brand:#df0080; --brand-d:#b3006a; --brand-soft:#fdeef6;
+    --ink:#252525; --sub:#666; --line:#e7e7e7;
+    --bg:#ffffff; --bg2:#f5f5f5; --warm:#f9f7f4;
+    --cat-blue:#2f7fce; --cat-blue-bg:#eaf3fb;
+    --cat-amber:#e29612; --cat-amber-bg:#fbf1dd;
+    --cat-green:#2ba46b; --cat-green-bg:#e7f6ee;
+    --shadow:0 4px 16px rgba(37,37,37,.07);
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"メイリオ",Meiryo,"游ゴシック体","Yu Gothic",YuGothic,"ヒラギノ角ゴ ProN",sans-serif;
+    color:var(--ink); background:var(--bg2); line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1060px; margin:0 auto; padding:0 18px}
+
+  /* top bar */
+  .top{position:sticky; top:0; z-index:20; background:#fff; border-bottom:2px solid var(--brand)}
+  .top .wrap{display:flex; align-items:center; gap:12px; padding:9px 18px; flex-wrap:wrap}
+  .brand{display:flex; align-items:center; gap:9px; font-weight:800; color:var(--ink); white-space:nowrap; font-size:15px}
+  .brand small{display:block; font-weight:500; color:var(--sub); font-size:11px}
+  .brand .logo{width:30px;height:30px;border-radius:7px;background:var(--brand);display:grid;place-items:center;color:#fff;font-size:16px}
+  .langs{margin-left:auto; display:flex; gap:5px; flex-wrap:wrap}
+  .langs button{
+    border:1.5px solid var(--line); background:#fff; color:var(--sub);
+    border-radius:6px; padding:5px 11px; font-size:12.5px; font-weight:700; cursor:pointer; transition:.15s;
+  }
+  .langs button:hover{border-color:var(--brand); color:var(--brand)}
+  .langs button[aria-pressed="true"]{background:var(--brand); border-color:var(--brand); color:#fff}
+
+  /* hero */
+  .hero{padding:28px 0 4px}
+  .card-hero{
+    background:linear-gradient(120deg,#fff,var(--brand-soft)); border:1px solid var(--line);
+    border-left:6px solid var(--brand); border-radius:14px; box-shadow:var(--shadow);
+    padding:24px; display:flex; gap:22px; align-items:center;
+  }
+  .card-hero img{width:110px;height:auto;flex:none}
+  .card-hero h1{margin:.15em 0 .35em; font-size:clamp(21px,3.6vw,30px); color:var(--brand-d); line-height:1.4}
+  .card-hero p{margin:.2em 0; color:#4a4a4a; font-size:14.5px}
+  .welcome-badge{display:inline-block; background:var(--brand); color:#fff; font-weight:700; padding:3px 13px; border-radius:999px; font-size:12.5px; margin-bottom:6px}
+
+  .notice{margin:14px 0; padding:11px 15px; border-radius:9px; font-size:13px}
+  .notice.prep{background:#fbf1dd; border:1px solid #ecd49a; color:#8a6412; display:none}
+  .notice.prep.show{display:block}
+  .notice.info{background:var(--cat-blue-bg); border:1px solid #cfe2f4; color:#2c5f92}
+
+  .sec-h{margin:26px 0 3px; font-size:19px; color:var(--brand-d); font-weight:800; border-left:5px solid var(--brand); padding-left:11px}
+  .sec-sub{margin:0 0 14px 16px; color:var(--sub); font-size:13px}
+
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:15px}
+  @media(max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+
+  .card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column}
+  .band{height:5px}
+  .band.blue{background:var(--cat-blue)} .band.amber{background:var(--cat-amber)} .band.green{background:var(--cat-green)}
+  .card-body{padding:13px 14px 15px; display:flex; flex-direction:column; gap:8px; flex:1}
+  .chip{align-self:flex-start; font-size:11px; font-weight:800; padding:3px 10px; border-radius:5px}
+  .chip.blue{background:var(--cat-blue-bg); color:#255f9c} .chip.amber{background:var(--cat-amber-bg); color:#916012} .chip.green{background:var(--cat-green-bg); color:#22815a}
+
+  /* illustration slot (drop-in: assets/img/<id>.png replaces the placeholder) */
+  .slot{position:relative; aspect-ratio:1/1; border-radius:9px; overflow:hidden; background:#faf7f9; border:1px solid var(--line)}
+  .slot .art{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#fff; z-index:1}
+  .slot .ph{position:absolute; inset:0; z-index:0; display:grid; place-items:center; text-align:center; color:#c39;
+    background:repeating-linear-gradient(45deg,#f7eef4 0 10px,#fdf7fb 10px 20px)}
+  .slot .ph .emo{font-size:38px}
+  .slot .oc{position:absolute; right:7px; top:7px; font-size:11px; font-weight:800; color:#916012; background:#fff; border:1px solid var(--line); border-radius:5px; padding:1px 6px; z-index:2}
+  .slot .fn{position:absolute; left:7px; bottom:6px; font-size:9.5px; color:#a58; background:#fff; padding:1px 6px; border-radius:4px; border:1px solid var(--line); z-index:2}
+
+  .card h3{margin:0; font-size:16px; color:var(--ink); line-height:1.5}
+  .card .reason{margin:0; font-size:12.5px; color:var(--sub)}
+  .card .detail{margin:0; font-size:12.5px; background:var(--warm); border-radius:8px; padding:7px 10px; color:#5a4a52}
+  .btn-link{align-self:flex-start; margin-top:2px; display:inline-flex; gap:6px; background:var(--brand-soft); color:var(--brand-d); text-decoration:none; font-weight:700; font-size:12.5px; padding:7px 13px; border-radius:6px; border:1px solid #f2cfe2}
+  .btn-link:hover{background:#f9dcec}
+
+  .contact-emo{width:52px; height:52px; border-radius:50%; background:var(--cat-green-bg); color:var(--cat-green); display:grid; place-items:center; font-size:26px; margin:2px 0}
+  .contact-box{background:var(--cat-green-bg); border:1px solid #cbe8da; border-radius:10px; padding:12px}
+  .contact-box .v{border-bottom-color:#bfe0cf}
+  .fields{display:flex; flex-direction:column; gap:6px; margin-top:2px}
+  .field{display:flex; gap:8px; align-items:center; font-size:12.5px}
+  .field .k{color:var(--sub); min-width:78px; font-weight:700}
+  .field .v{flex:1; border-bottom:1.5px dotted #d6d0d3; color:#aa8; padding:2px}
+
+  footer{margin:38px 0 24px}
+  .foot-card{background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); padding:20px}
+  .foot-card h4{margin:0 0 10px; color:var(--brand-d); font-size:15px}
+  .foot-links{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px}
+  .foot-links a{font-size:12.5px; color:var(--brand-d); text-decoration:none; background:var(--brand-soft); border:1px solid #f2cfe2; border-radius:7px; padding:7px 12px}
+  .foot-note{font-size:12px; color:var(--sub); margin:6px 0 0}
+  .compliance{font-size:11.5px; color:#6a6a6a; background:var(--bg2); border-radius:8px; padding:10px 12px; margin-top:12px}
+  .copy{text-align:center; color:#aaa; font-size:12px; margin-top:16px}
+
+  .ribbon{position:fixed; right:-46px; top:15px; transform:rotate(45deg); background:#8a6412; color:#fff; font-size:11px; font-weight:800; padding:5px 52px; z-index:30; box-shadow:0 2px 8px rgba(0,0,0,.2)}
+</style>
+</head>
+<body>
+<div class="ribbon">MOCKUP / 校正前</div>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <span class="logo">🐰</span>
+      <span>株式会社さくらパートナーズ<small>izu-ito.com｜賃貸のごあんない</small></span>
+    </div>
+    <nav class="langs" id="langs" aria-label="言語 / Language">
+      <button data-lang="ja" aria-pressed="true">日本語</button>
+      <button data-lang="en">English</button>
+      <button data-lang="vi">Tiếng Việt</button>
+      <button data-lang="id">Bahasa Indonesia</button>
+      <button data-lang="th">ภาษาไทย</button>
+      <button data-lang="tl">Tagalog</button>
+      <button data-lang="my">မြန်မာ</button>
+      <button data-lang="km">ភាសាខ្មែរ</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="card-hero">
+      <img src="assets/mascot_wave.png" alt="さくらパートナーズ マスコット">
+      <div>
+        <span class="welcome-badge" data-t="badge">ようこそ！ Welcome!</span>
+        <h1 data-t="title">ようこそ。気持ちよく暮らすためのご案内</h1>
+        <p data-t="intro">新しく入居されるみなさまへ。この街で、みんなが気持ちよく暮らすための ちいさなお願いをまとめました。</p>
+        <p data-t="intro2">日本人の入居者も、同じルールで暮らしています。あなたの国のやり方が間違っているのではありません。日本の建物の事情が違うだけです。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="notice prep" id="prep"></div>
+  <div class="notice info" id="varnote" data-t="varnote">※「◯時」「◯◯」「連絡先」などは、お部屋ごとに異なります。入居のときにお知らせします。</div>
+
+  <h2 class="sec-h" data-t="sec_h">暮らしのお願い</h2>
+  <p class="sec-sub" data-t="sec_sub">絵を見て、短い文章で確認できます。</p>
+
+  <section class="grid" id="grid"></section>
+
+  <footer>
+    <div class="foot-card">
+      <h4 data-t="foot_h">もっと くわしく（公的な資料・多言語）／ Official multilingual guides</h4>
+      <div class="foot-links">
+        <a href="https://www.mlit.go.jp/jutakukentiku/house/jutakukentiku_house_tk3_000017.html" target="_blank" rel="noopener">国土交通省｜部屋探しのガイドブック（多言語）</a>
+        <a href="https://www.moj.go.jp/isa/support/portal/index.html" target="_blank" rel="noopener">出入国在留管理庁｜生活・就労ガイドブック（多言語）</a>
+        <a href="https://www.clair.or.jp/tabunka/portal/" target="_blank" rel="noopener">CLAIR｜多文化共生ポータル</a>
+      </div>
+      <p class="foot-note">ごみの分け方は地域ごとに違います。お部屋のある市区町村のページをご覧ください。<br>Trash rules differ by area — please check your local city/town page.</p>
+      <div class="compliance">本ページは、国土交通省が示す「外国人の民間賃貸住宅への円滑な入居」の考え方に沿って作成しています。すべての入居者に共通のごあんないです。</div>
+    </div>
+    <p class="copy">© 株式会社さくらパートナーズ / izu-ito.com</p>
+  </footer>
+</main>
+
+<script>
+/* ---- 14 cards. Positive "onegai" framing; text carries the meaning, picture supports. ---- */
+const CARDS = [
+ { key:"mg_01_shoes", cat:"blue", emo:"👟",
+   ja:{t:"靴は玄関で脱ぎます",r:"床が傷つきやすいためです。"},
+   en:{t:"Take off your shoes at the entrance",r:"The floors scratch easily."},
+   vi:{t:"Cởi giày ở lối vào",r:"Sàn nhà dễ bị trầy xước."},
+   id:{t:"Lepas sepatu di pintu masuk",r:"Lantai mudah tergores."},
+   th:{t:"ถอดรองเท้าที่ทางเข้า",r:"พื้นเป็นรอยง่าย"},
+   tl:{t:"Maghubad ng sapatos sa pintuan",r:"Madaling magasgas ang sahig."},
+   my:{t:"အဝင်ဝတွင် ဖိနပ်ချွတ်ပါ",r:"ကြမ်းပြင် ခြစ်ရာထင်လွယ်သည်။"},
+   km:{t:"ដោះស្បែកជើងនៅច្រកចូល",r:"កម្រាលងាយកឹតខូច។"} },
+ { key:"mg_02_water", cat:"blue", emo:"🛁",
+   ja:{t:"水を流すのはお風呂の中だけ",r:"床から下の階へ水がもれます。"},
+   en:{t:"Use water only inside the bath area",r:"Water can leak to the floor below."},
+   vi:{t:"Chỉ dùng nước trong khu vực phòng tắm",r:"Nước có thể rò xuống tầng dưới."},
+   id:{t:"Gunakan air hanya di dalam kamar mandi",r:"Air bisa bocor ke lantai bawah."},
+   th:{t:"ใช้น้ำเฉพาะในบริเวณห้องอาบน้ำ",r:"น้ำอาจรั่วลงชั้นล่าง"},
+   tl:{t:"Gumamit ng tubig sa loob lang ng banyo",r:"Maaaring tumagas ang tubig sa ibaba."},
+   my:{t:"ရေကို ရေချိုးခန်းအတွင်း၌သာ သုံးပါ",r:"ရေသည် အောက်ထပ်သို့ ယိုစိမ့်နိုင်သည်။"},
+   km:{t:"ប្រើទឹកតែក្នុងបន្ទប់ទឹក",r:"ទឹកអាចលេចទៅជាន់ក្រោម។"} },
+ { key:"mg_03_pet", cat:"blue", emo:"🐶",
+   ja:{t:"ペットは飼う前にご相談ください",r:"ペット可のお部屋もご案内できます。"},
+   en:{t:"Please ask us before keeping a pet",r:"We can also show you pet-friendly rooms."},
+   vi:{t:"Vui lòng hỏi trước khi nuôi thú cưng",r:"Chúng tôi có thể giới thiệu phòng cho phép thú cưng."},
+   id:{t:"Silakan tanya sebelum memelihara hewan",r:"Kami bisa menawarkan kamar yang boleh hewan."},
+   th:{t:"กรุณาสอบถามก่อนเลี้ยงสัตว์",r:"เรามีห้องที่เลี้ยงสัตว์ได้แนะนำ"},
+   tl:{t:"Magtanong muna bago mag-alaga ng hayop",r:"May maipapakita kaming pet-friendly na kwarto."},
+   my:{t:"အိမ်မွေးတိရစ္ဆာန် မမွေးမီ ကြိုတင်မေးပါ",r:"မွေးခွင့်ပြုသည့် အခန်းများ ညွှန်ပြပေးနိုင်သည်။"},
+   km:{t:"សូមសួរមុននឹងចិញ្ចឹមសត្វ",r:"យើងអាចណែនាំបន្ទប់ដែលអនុញ្ញាតសត្វ។"} },
+ { key:"mg_04_noise_in", cat:"amber", emo:"🔉",
+   ja:{t:"夜は静かに過ごします",r:"壁が薄く、となりに聞こえます。"},
+   en:{t:"Keep quiet at night",r:"Walls are thin; sound reaches neighbors."},
+   vi:{t:"Giữ yên lặng vào ban đêm",r:"Tường mỏng, tiếng ồn truyền sang hàng xóm."},
+   id:{t:"Tetap tenang di malam hari",r:"Dinding tipis, suara terdengar ke tetangga."},
+   th:{t:"เงียบในเวลากลางคืน",r:"ผนังบาง เสียงดังถึงเพื่อนบ้าน"},
+   tl:{t:"Manahimik sa gabi",r:"Manipis ang dingding, umaabot ang ingay sa kapitbahay."},
+   my:{t:"ညအချိန် တိတ်ဆိတ်ပါ",r:"နံရံပါးသဖြင့် အသံ အိမ်နီးချင်းထံ ရောက်သည်။"},
+   km:{t:"ស្ងាត់នៅពេលយប់",r:"ជញ្ជាំងស្ដើង សំឡេងឮដល់អ្នកជិតខាង។"},
+   detail:{ja:"夜◯時を過ぎたら、声を小さくしてください。",en:"Please lower your voice after ◯:00.",vi:"Xin nói nhỏ sau ◯:00.",id:"Mohon pelankan suara setelah pukul ◯:00.",th:"กรุณาเบาเสียงหลัง ◯:00 น.",tl:"Hinaan ang boses pagkatapos ng ◯:00.",my:"◯:00 နောက်ပိုင်း အသံတိုးပါ။",km:"សូមបន្ថយសំឡេងក្រោយ ◯:00។"} },
+  { key:"mg_05_noise_out", cat:"amber", emo:"🌙",
+   ja:{t:"夜、外で大人数で騒ぐのはご遠慮ください",r:"夜はみんな寝ています。場所を問わず近所の迷惑になります。"},
+   en:{t:"Please avoid noisy outdoor gatherings at night",r:"People are sleeping. It disturbs neighbors wherever you are."},
+   vi:{t:"Xin tránh tụ tập ồn ào ngoài trời vào ban đêm",r:"Ban đêm mọi người đang ngủ. Dù ở đâu cũng làm phiền hàng xóm."},
+   id:{t:"Mohon hindari berkumpul ramai di luar pada malam hari",r:"Malam hari orang tidur. Di mana pun, mengganggu tetangga."},
+   th:{t:"กรุณาหลีกเลี่ยงการรวมกลุ่มส่งเสียงดังนอกอาคารตอนกลางคืน",r:"กลางคืนผู้คนกำลังนอน ไม่ว่าที่ไหนก็รบกวนเพื่อนบ้าน"},
+   tl:{t:"Iwasan ang maingay na pagtitipon sa labas kung gabi",r:"Natutulog ang mga tao. Kahit saan, nakakaabala sa kapitbahay."},
+   my:{t:"ညအချိန် အပြင်တွင် စုဝေးဆူညံခြင်း ရှောင်ပါ",r:"ညအချိန် လူများ အိပ်နေသည်။ မည်သည့်နေရာမဆို အိမ်နီးချင်းကို နှောင့်ယှက်သည်။"},
+   km:{t:"សូមជៀសវាងការជួបជុំគ្នាឧរអរនៅខាងក្រៅពេលយប់",r:"ពេលយប់មនុស្សកំពុងគេង។ ទោះនៅកន្លែងណាក៏រំខានអ្នកជិតខាង។"} },
+ { key:"mg_06_trash", cat:"blue", emo:"🗑️",
+   ja:{t:"ゴミは分けて、決められた曜日の朝に出します",r:"地域ごとに分け方が違います。"},
+   en:{t:"Sort your trash and put it out on the right morning",r:"Rules differ by area."},
+   vi:{t:"Phân loại rác, bỏ đúng buổi sáng quy định",r:"Quy tắc khác nhau theo khu vực."},
+   id:{t:"Pilah sampah, buang pada pagi yang ditentukan",r:"Aturan berbeda tiap wilayah."},
+   th:{t:"แยกขยะ ทิ้งในเช้าวันที่กำหนด",r:"กฎต่างกันตามพื้นที่"},
+   tl:{t:"Ihiwalay ang basura, ilabas sa tamang umaga",r:"Iba-iba ang patakaran kada lugar."},
+   my:{t:"အမှိုက်ခွဲ၍ သတ်မှတ်နေ့ မနက်တွင် ထုတ်ပါ",r:"ဒေသအလိုက် စည်းမျဉ်း ကွဲပြားသည်။"},
+   km:{t:"បំបែកសំរាម ដាក់ចេញនៅព្រឹកថ្ងៃកំណត់",r:"ច្បាប់ខុសគ្នាតាមតំបន់។"},
+   link:{href:"#",ja:"地域のゴミの分け方を見る",en:"See your area's trash rules",vi:"Xem quy tắc rác khu vực",id:"Lihat aturan sampah wilayah Anda",th:"ดูกฎการแยกขยะในพื้นที่",tl:"Tingnan ang patakaran sa inyong lugar",my:"သင့်ဒေသ၏ အမှိုက်စည်းမျဉ်း ကြည့်ရန်",km:"មើលច្បាប់សំរាមតំបន់អ្នក"} },
+ { key:"mg_07_livesound", cat:"amber", emo:"🧺",
+   ja:{t:"洗濯機・掃除機は夜遅く使いません",r:"下の階に響きます。"},
+   en:{t:"Avoid the washing machine / vacuum late at night",r:"It carries to the floor below."},
+   vi:{t:"Tránh dùng máy giặt / máy hút bụi khuya",r:"Tiếng động truyền xuống tầng dưới."},
+   id:{t:"Hindari mesin cuci / penyedot debu larut malam",r:"Getarannya terdengar ke lantai bawah."},
+   th:{t:"เลี่ยงใช้เครื่องซักผ้า / เครื่องดูดฝุ่นดึกๆ",r:"เสียงสะเทือนถึงชั้นล่าง"},
+   tl:{t:"Iwasan ang washing machine / vacuum sa gabi",r:"Umaabot ito sa ibabang palapag."},
+   my:{t:"ည နက်စွာ အဝတ်လျှော်စက်/ဖုန်စုပ်စက် ရှောင်ပါ",r:"အောက်ထပ်သို့ တုန်ခါသံ ရောက်သည်။"},
+   km:{t:"ចៀសវាងម៉ាស៊ីនបោកគក់/បូមធូលីពេលយប់ជ្រៅ",r:"សំឡេងញ័រទៅដល់ជាន់ក្រោម។"} },
+ { key:"mg_08_smoke", cat:"amber", emo:"🚬",
+   ja:{t:"タバコは決められた場所で",r:"煙がとなりの部屋に流れます。"},
+   en:{t:"Smoke only in the designated place",r:"Smoke drifts to the next room."},
+   vi:{t:"Chỉ hút thuốc ở nơi quy định",r:"Khói bay sang phòng bên cạnh."},
+   id:{t:"Merokok hanya di tempat yang ditentukan",r:"Asap terbawa ke kamar sebelah."},
+   th:{t:"สูบบุหรี่เฉพาะในที่ที่กำหนด",r:"ควันลอยไปห้องข้างเคียง"},
+   tl:{t:"Manigarilyo lang sa itinakdang lugar",r:"Pumupunta ang usok sa katabing kwarto."},
+   my:{t:"သတ်မှတ်နေရာတွင်သာ ဆေးလိပ်သောက်ပါ",r:"မီးခိုး ဘေးအခန်းသို့ ရောက်သည်။"},
+   km:{t:"ជក់បារីតែនៅកន្លែងកំណត់",r:"ផ្សែងហុយទៅបន្ទប់ក្បែរ។"},
+   detail:{ja:"ベランダではタバコを吸わないでください。",en:"Please do not smoke on the balcony.",vi:"Xin đừng hút thuốc ở ban công.",id:"Mohon tidak merokok di balkon.",th:"กรุณาอย่าสูบบุหรี่ที่ระเบียง",tl:"Huwag manigarilyo sa balkonahe.",my:"လသာဆောင်တွင် ဆေးလိပ် မသောက်ပါနှင့်။",km:"សូមកុំជក់បារីនៅយ៉រ។"} },
+ { key:"mg_09_mold", cat:"blue", emo:"💨",
+   ja:{t:"水回りは換気して、カビを防ぎます",r:"閉めきるとカビが生えます。"},
+   en:{t:"Ventilate wet areas to prevent mold",r:"Closed-up rooms grow mold."},
+   vi:{t:"Thông gió khu ẩm để tránh nấm mốc",r:"Phòng bí sẽ sinh nấm mốc."},
+   id:{t:"Ventilasi area basah untuk cegah jamur",r:"Ruangan tertutup mudah berjamur."},
+   th:{t:"ระบายอากาศห้องน้ำเพื่อกันเชื้อรา",r:"ห้องปิดอับทำให้เกิดเชื้อรา"},
+   tl:{t:"Hanginan ang basang lugar para maiwas sa amag",r:"Nagkakaamag ang saradong kwarto."},
+   my:{t:"မှိုမတက်စေရန် စိုစွတ်နေရာ လေဝင်လေထွက် လုပ်ပါ",r:"ပိတ်ထားသောအခန်း မှိုတက်တတ်သည်။"},
+   km:{t:"បញ្ចេញខ្យល់កន្លែងសើម ដើម្បីការពារផ្សិត",r:"បន្ទប់បិទជិត ងាយដុះផ្សិត។"},
+   detail:{ja:"カビは退去のときの負担になります。",en:"Mold can add costs when you move out.",vi:"Nấm mốc có thể phát sinh phí khi trả nhà.",id:"Jamur bisa menambah biaya saat pindah.",th:"เชื้อราอาจมีค่าใช้จ่ายตอนย้ายออก",tl:"Ang amag ay maaaring magdagdag ng gastos paglipat.",my:"မှိုသည် ပြောင်းထွက်ချိန် ကုန်ကျစရိတ် တိုးစေနိုင်သည်။",km:"ផ្សិតអាចបន្ថែមថ្លៃពេលចាកចេញ។"} },
+ { key:"mg_10_bike", cat:"blue", emo:"🚲",
+   ja:{t:"自転車・車は決められた場所へ",r:"通路に置くと通れません。"},
+   en:{t:"Park bikes / cars in the designated place",r:"Blocking the path stops others."},
+   vi:{t:"Để xe đạp / xe hơi đúng nơi quy định",r:"Chặn lối đi khiến người khác không qua được."},
+   id:{t:"Parkir sepeda / mobil di tempat yang ditentukan",r:"Menghalangi jalan mengganggu orang lain."},
+   th:{t:"จอดจักรยาน / รถในที่ที่กำหนด",r:"การกีดขวางทางเดินทำให้ผู้อื่นผ่านไม่ได้"},
+   tl:{t:"Iparada ang bisikleta / sasakyan sa takdang lugar",r:"Nakakaharang sa daanan ng iba."},
+   my:{t:"စက်ဘီး / ကား သတ်မှတ်နေရာတွင် ရပ်ပါ",r:"လမ်းကြားပိတ်ဆို့ပါက အခြားသူများ မသွားနိုင်ပါ။"},
+   km:{t:"ចតកង់ / ឡានក្នុងកន្លែងកំណត់",r:"ការស្ទះផ្លូវ ធ្វើឲ្យអ្នកដទៃមិនអាចឆ្លងកាត់។"} },
+ { key:"mg_11_resident", cat:"blue", emo:"🔑",
+   ja:{t:"住むのは契約した人だけです",r:"契約で決まっています。"},
+   en:{t:"Only the person on the contract may live here",r:"This is set in the contract."},
+   vi:{t:"Chỉ người đứng tên hợp đồng được ở đây",r:"Đây là quy định trong hợp đồng."},
+   id:{t:"Hanya penyewa dalam kontrak yang boleh tinggal",r:"Ini ditetapkan dalam kontrak."},
+   th:{t:"เฉพาะผู้มีชื่อในสัญญาเท่านั้นที่พักได้",r:"เป็นข้อกำหนดในสัญญา"},
+   tl:{t:"Ang nasa kontrata lang ang maaaring tumira",r:"Nakasaad ito sa kontrata."},
+   my:{t:"စာချုပ်ပါသူသာ ဤနေရာတွင် နေထိုင်နိုင်သည်",r:"စာချုပ်တွင် သတ်မှတ်ထားသည်။"},
+   km:{t:"មានតែអ្នកនៅក្នុងកិច្ចសន្យាទេ ដែលអាចរស់នៅ",r:"កំណត់ក្នុងកិច្ចសន្យា។"},
+   detail:{ja:"長く泊まる人がいるときは、ご相談ください。",en:"Please consult us about anyone staying for a long time.",vi:"Xin trao đổi nếu có người ở lại lâu dài.",id:"Mohon konsultasi jika ada yang menginap lama.",th:"กรุณาปรึกษาหากมีผู้พักระยะยาว",tl:"Kumonsulta kung may matagal na mananatili.",my:"ကြာရှည် တည်းခိုသူ ရှိပါက တိုင်ပင်ပါ။",km:"សូមពិគ្រោះ បើមានអ្នកស្នាក់នៅយូរ។"} },
+ { key:"mg_12_restore", cat:"blue", emo:"🧽",
+   ja:{t:"部屋はきれいに使い、退去のときは元に戻します",r:"「原状回復」のルールです。"},
+   en:{t:"Keep the room clean and restore it when you leave",r:"This is the “restoration” rule."},
+   vi:{t:"Giữ phòng sạch và trả lại nguyên trạng khi rời đi",r:"Đây là quy định “khôi phục nguyên trạng”."},
+   id:{t:"Jaga kamar tetap bersih dan pulihkan saat pindah",r:"Ini aturan “pemulihan kondisi”."},
+   th:{t:"รักษาห้องให้สะอาดและคืนสภาพเดิมเมื่อย้ายออก",r:"เป็นกฎ “การคืนสภาพเดิม”"},
+   tl:{t:"Panatilihing malinis ang kwarto at ibalik sa dati paglipat",r:"Ito ang tuntunin ng “pagpapanumbalik”."},
+   my:{t:"အခန်း သန့်ရှင်းစွာ ထားပြီး ပြောင်းထွက်ချိန် မူလအတိုင်း ပြန်ထားပါ",r:"“မူလအခြေအနေ ပြန်ထားခြင်း” စည်းမျဉ်း ဖြစ်သည်။"},
+   km:{t:"រក្សាបន្ទប់ស្អាត និងស្ដារឲ្យដូចដើមពេលចាកចេញ",r:"នេះជាច្បាប់ “ស្ដារសភាពដើម”។"},
+   detail:{ja:"これは退去のときの費用に関わる約束です。",en:"This affects the costs when you move out.",vi:"Điều này liên quan đến chi phí khi trả nhà.",id:"Ini memengaruhi biaya saat pindah.",th:"มีผลต่อค่าใช้จ่ายเมื่อย้ายออก",tl:"Nakaapekto ito sa gastos paglipat.",my:"ပြောင်းထွက်ချိန် ကုန်ကျစရိတ်နှင့် သက်ဆိုင်သည်။",km:"វាប៉ះពាល់ថ្លៃពេលចាកចេញ។"},
+   link:{href:"https://www.mlit.go.jp/jutakukentiku/house/jutakukentiku_house_tk3_000017.html",ja:"原状回復を詳しく見る",en:"Learn more about restoration",vi:"Tìm hiểu về khôi phục nguyên trạng",id:"Pelajari tentang pemulihan kondisi",th:"อ่านเรื่องการคืนสภาพ",tl:"Alamin ang tungkol sa pagpapanumbalik",my:"မူလအခြေအနေ ပြန်ထားခြင်း ဖတ်ရန်",km:"ស្វែងយល់អំពីការស្ដារសភាពដើម"} },
+ { key:"mg_13_key", cat:"blue", emo:"🗝️",
+   ja:{t:"鍵は大切に。なくしたらすぐ連絡してください",r:"防犯と交換費用のためです。"},
+   en:{t:"Keep your key safe. If you lose it, contact us right away",r:"For security and replacement cost."},
+   vi:{t:"Giữ chìa khóa cẩn thận. Mất thì báo ngay",r:"Vì an ninh và phí làm lại."},
+   id:{t:"Jaga kunci baik-baik. Jika hilang, segera hubungi kami",r:"Demi keamanan dan biaya penggantian."},
+   th:{t:"เก็บกุญแจให้ดี หากหายแจ้งทันที",r:"เพื่อความปลอดภัยและค่าทำใหม่"},
+   tl:{t:"Ingatan ang susi. Kung mawala, agad kaming kontakin",r:"Para sa seguridad at gastos sa pagpapalit."},
+   my:{t:"သော့ကို ဂရုစိုက်ပါ။ ပျောက်ပါက ချက်ချင်း ဆက်သွယ်ပါ",r:"လုံခြုံရေးနှင့် အသစ်လဲစရိတ်အတွက်။"},
+   km:{t:"រក្សាកូនសោរឲ្យបានល្អ។ បើបាត់ ទាក់ទងមកភ្លាម",r:"សម្រាប់សុវត្ថិភាព និងថ្លៃផ្លាស់ថ្មី។"} },
+ { key:"mg_14_contact", cat:"green", emo:"📞",
+   ja:{t:"困ったとき・緊急のときの連絡先",r:"いつでもご相談ください。"},
+   en:{t:"Who to contact for trouble or emergencies",r:"Please reach out anytime."},
+   vi:{t:"Liên hệ khi gặp khó khăn hoặc khẩn cấp",r:"Hãy liên hệ bất cứ lúc nào."},
+   id:{t:"Hubungi kami saat ada masalah atau darurat",r:"Silakan hubungi kapan saja."},
+   th:{t:"ติดต่อเมื่อมีปัญหาหรือเหตุฉุกเฉิน",r:"ติดต่อได้ทุกเมื่อ"},
+   tl:{t:"Sino ang tatawagan kapag may problema o emergency",r:"Huwag mag-atubiling tumawag anumang oras."},
+   my:{t:"ပြဿနာ / အရေးပေါ်တွင် ဆက်သွယ်ရန်",r:"အချိန်မရွေး ဆက်သွယ်ပါ။"},
+   km:{t:"ទំនាក់ទំនងពេលមានបញ្ហា ឬពេលអាសន្ន",r:"សូមទាក់ទងបានគ្រប់ពេល។"},
+   contact:true },
+];
+
+const CHIP={
+ blue:{ja:"お願い",en:"Please",vi:"Đề nghị",id:"Mohon",th:"คำขอ",tl:"Paki",my:"တောင်းဆို",km:"សំណូមពរ"},
+ amber:{ja:"注意",en:"Note",vi:"Lưu ý",id:"Perhatian",th:"ข้อควรระวัง",tl:"Paalala",my:"သတိ",km:"ចំណាំ"},
+ green:{ja:"安心",en:"Help",vi:"Hỗ trợ",id:"Bantuan",th:"ช่วยเหลือ",tl:"Tulong",my:"အကူအညီ",km:"ជំនួយ"},
+};
+const OKL={ja:"○ こうします",en:"○ Do this",vi:"○ Nên làm",id:"○ Lakukan ini",th:"○ ควรทำ",tl:"○ Gawin ito",my:"○ ဤသို့ လုပ်ပါ",km:"○ គួរធ្វើ"};
+
+const T={
+ ja:{badge:"ようこそ！ Welcome!",title:"ようこそ。気持ちよく暮らすためのご案内",intro:"新しく入居されるみなさまへ。この街で、みんなが気持ちよく暮らすための ちいさなお願いをまとめました。",intro2:"日本人の入居者も、同じルールで暮らしています。あなたの国のやり方が間違っているのではありません。日本の建物の事情が違うだけです。",varnote:"※「◯時」「◯◯」「連絡先」などは、お部屋ごとに異なります。入居のときにお知らせします。",sec_h:"暮らしのお願い",sec_sub:"絵を見て、短い文章で確認できます。",c_company:"会社",c_tel:"電話",c_hours:"受付",c_emg:"緊急"},
+ en:{badge:"Welcome! ようこそ！",title:"Welcome — a little guide to living comfortably here",intro:"To everyone moving in: here are a few small requests so we can all live comfortably in this town.",intro2:"All residents, including Japanese residents, follow the same rules. The way things are done in your country is not wrong — Japanese buildings are simply built differently.",varnote:"* Times, places and contacts (◯:00, ◯◯) differ by room. We will let you know when you move in.",sec_h:"Requests for comfortable living",sec_sub:"You can understand each one from the picture and a short line of text.",c_company:"Company",c_tel:"Phone",c_hours:"Hours",c_emg:"Emergency"},
+ vi:{badge:"Chào mừng! ようこそ！",title:"Chào mừng — hướng dẫn sống thoải mái tại đây",intro:"Gửi cư dân mới: vài điều nhỏ mong bạn hợp tác để mọi người sống thoải mái trong khu phố này.",intro2:"Mọi cư dân, kể cả người Nhật, đều theo cùng quy tắc. Cách làm ở nước bạn không sai — nhà ở Nhật chỉ được xây khác đi.",varnote:"* Giờ, nơi và số liên hệ (◯:00, ◯◯) khác nhau theo từng phòng. Sẽ thông báo khi bạn vào ở.",sec_h:"Những điều đề nghị khi sinh sống",sec_sub:"Hiểu mỗi điều qua hình ảnh và một dòng chữ ngắn.",c_company:"Công ty",c_tel:"Điện thoại",c_hours:"Giờ",c_emg:"Khẩn cấp"},
+ id:{badge:"Selamat datang! ようこそ！",title:"Selamat datang — panduan hidup nyaman di sini",intro:"Kepada penghuni baru: beberapa permintaan kecil agar kita semua hidup nyaman di kota ini.",intro2:"Semua penghuni, termasuk warga Jepang, mengikuti aturan yang sama. Cara di negara Anda tidak salah — bangunan di Jepang hanya dibangun berbeda.",varnote:"* Waktu, tempat, dan kontak (◯:00, ◯◯) berbeda tiap kamar. Akan diberitahu saat Anda pindah masuk.",sec_h:"Permintaan untuk hidup nyaman",sec_sub:"Pahami tiap poin lewat gambar dan satu baris teks singkat.",c_company:"Perusahaan",c_tel:"Telepon",c_hours:"Jam",c_emg:"Darurat"},
+ th:{badge:"ยินดีต้อนรับ! ようこそ！",title:"ยินดีต้อนรับ — คู่มือการอยู่อาศัยอย่างสบายใจ",intro:"ถึงผู้พักอาศัยใหม่: ข้อขอความร่วมมือเล็กๆ เพื่อให้ทุกคนอยู่อย่างสบายใจในเมืองนี้",intro2:"ผู้พักทุกคนรวมถึงคนญี่ปุ่นก็ทำตามกฎเดียวกัน วิธีในประเทศของคุณไม่ผิด เพียงแต่อาคารในญี่ปุ่นสร้างต่างกัน",varnote:"* เวลา สถานที่ และผู้ติดต่อ (◯:00, ◯◯) ต่างกันตามห้อง จะแจ้งเมื่อเข้าอยู่",sec_h:"ข้อขอความร่วมมือในการใช้ชีวิต",sec_sub:"เข้าใจแต่ละข้อจากภาพและข้อความสั้นๆ",c_company:"บริษัท",c_tel:"โทรศัพท์",c_hours:"เวลา",c_emg:"ฉุกเฉิน"},
+ tl:{badge:"Maligayang pagdating! ようこそ！",title:"Maligayang pagdating — gabay sa kumportableng pamumuhay dito",intro:"Sa mga bagong lumipat: ilang maliliit na kahilingan para maayos ang pamumuhay ng lahat sa bayang ito.",intro2:"Lahat ng residente, pati mga Hapon, ay sumusunod sa parehong tuntunin. Hindi mali ang gawi sa inyong bansa — iba lang ang pagkakagawa ng gusali sa Japan.",varnote:"* Ang oras, lugar, at kontak (◯:00, ◯◯) ay iba kada kwarto. Ipapaalam sa paglipat.",sec_h:"Mga kahilingan para sa maayos na pamumuhay",sec_sub:"Maiintindihan ang bawat isa sa larawan at maikling teksto.",c_company:"Kompanya",c_tel:"Telepono",c_hours:"Oras",c_emg:"Emergency"},
+ my:{badge:"ကြိုဆိုပါသည်! ようこそ！",title:"ကြိုဆိုပါသည် — သက်တောင့်သက်သာ နေထိုင်ရေး လမ်းညွှန်",intro:"အသစ်ဝင်ရောက်သူများသို့— အားလုံး သက်တောင့်သက်သာ နေထိုင်နိုင်ရန် တောင်းဆိုချက် အနည်းငယ်ပါ။",intro2:"ဂျပန်လူမျိုးအပါအဝင် နေထိုင်သူတိုင်း တူညီသော စည်းမျဉ်းကို လိုက်နာသည်။ သင့်နိုင်ငံ၏ နည်းလမ်း မမှားပါ — ဂျပန်အဆောက်အအုံများ ဆောက်ပုံ ကွာခြားရုံသာ ဖြစ်သည်။",varnote:"* အချိန်၊ နေရာ၊ ဆက်သွယ်ရန် (◯:00, ◯◯) အခန်းအလိုက် ကွဲသည်။ ဝင်နေချိန် အသိပေးပါမည်။",sec_h:"နေထိုင်ရေး တောင်းဆိုချက်များ",sec_sub:"ပုံနှင့် စာတိုဖြင့် တစ်ခုချင်း နားလည်နိုင်သည်။",c_company:"ကုမ္ပဏီ",c_tel:"ဖုန်း",c_hours:"အချိန်",c_emg:"အရေးပေါ်"},
+ km:{badge:"សូមស្វាគមន៍! ようこそ！",title:"សូមស្វាគមន៍ — មគ្គុទ្ទេសក៍រស់នៅដោយសុខស្រួល",intro:"ជូនអ្នកជួលថ្មី៖ សំណូមពរតូចៗ ដើម្បីឲ្យយើងទាំងអស់គ្នារស់នៅដោយសុខស្រួលក្នុងទីក្រុងនេះ។",intro2:"អ្នករស់នៅទាំងអស់ រួមទាំងជនជាតិជប៉ុន អនុវត្តច្បាប់ដូចគ្នា។ របៀបនៅប្រទេសអ្នកមិនខុសទេ — គ្រាន់តែអគារនៅជប៉ុនសាងសង់ខុសគ្នា។",varnote:"* ម៉ោង ទីកន្លែង និងទំនាក់ទំនង (◯:00, ◯◯) ខុសគ្នាតាមបន្ទប់។ នឹងជូនដំណឹងពេលចូលនៅ។",sec_h:"សំណូមពរសម្រាប់ការរស់នៅ",sec_sub:"យល់នីមួយៗ តាមរូបភាព និងអក្សរខ្លី។",c_company:"ក្រុមហ៊ុន",c_tel:"ទូរស័ព្ទ",c_hours:"ម៉ោង",c_emg:"អាសន្ន"},
+};
+
+/* provisional-translation banner (all non JA/EN are draft, pending native check) */
+const PROV={
+ vi:"※ Bản dịch tạm — cần hiệu đính bởi người bản xứ trước khi công bố.",
+ id:"※ Terjemahan sementara — perlu diperiksa penutur asli sebelum dipublikasikan.",
+ th:"※ คำแปลชั่วคราว — ต้องให้เจ้าของภาษาตรวจก่อนเผยแพร่",
+ tl:"※ Pansamantalang salin — kailangan ng native check bago i-publish.",
+ my:"※ ယာယီ ဘာသာပြန်ချက် — ထုတ်ဝေမီ ဇာတိစကားပြောသူဖြင့် စစ်ဆေးရန်။",
+ km:"※ ការបកប្រែបណ្ដោះអាសន្ន — ត្រូវពិនិត្យដោយអ្នកនិយាយដើមមុនផ្សព្វផ្សាយ។",
+};
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderCards(L){
+  const grid=document.getElementById("grid"); grid.innerHTML="";
+  CARDS.forEach((c,i)=>{
+    const d=c[L]||c.en;
+    const el=document.createElement("article"); el.className="card";
+    let h=`<div class="band ${c.cat}"></div><div class="card-body">`;
+    h+=`<span class="chip ${c.cat}">${CHIP[c.cat][L]||CHIP[c.cat].en}</span>`;
+    if(!c.contact){
+      h+=`<div class="slot">`;
+      h+=`<div class="ph"><span class="emo">${c.emo}</span></div>`;
+      h+=`<img class="art" src="assets/img/${c.key}.png" alt="${esc(d.t)}" onerror="this.style.display='none'">`;
+      h+=`<span class="fn">${c.key}.png</span></div>`;
+    } else {
+      h+=`<div class="contact-emo">${c.emo}</div>`;
+    }
+    h+=`<h3>${i+1}. ${esc(d.t)}</h3>`;
+    h+=`<p class="reason">${esc(d.r)}</p>`;
+    if(c.detail) h+=`<p class="detail">${esc(c.detail[L]||c.detail.en)}</p>`;
+    if(c.link){const lk=c.link; h+=`<a class="btn-link" href="${lk.href}" ${lk.href==='#'?'':'target="_blank" rel="noopener"'}>🔗 ${esc(lk[L]||lk.en)}</a>`;}
+    if(c.contact){const t=T[L]||T.en;
+      h+=`<div class="fields contact-box">
+        <div class="field"><span class="k">${t.c_company}</span><span class="v">株式会社さくらパートナーズ</span></div>
+        <div class="field"><span class="k">${t.c_tel}</span><span class="v">000-0000-0000</span></div>
+        <div class="field"><span class="k">${t.c_hours}</span><span class="v">9:00 – 18:00</span></div>
+        <div class="field"><span class="k">${t.c_emg}</span><span class="v">000-0000-0000</span></div></div>`;}
+    h+=`</div>`; el.innerHTML=h; grid.appendChild(el);
+  });
+}
+function applyLang(lang){
+  const L=T[lang]?lang:"en"; const t=T[L];
+  document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t"); if(t[k]!=null) el.textContent=t[k];});
+  renderCards(L); document.documentElement.lang=L;
+  const prep=document.getElementById("prep");
+  if(PROV[lang]){prep.textContent=PROV[lang]+"（この言語版は仮訳です）"; prep.classList.add("show");}
+  else{prep.classList.remove("show");}
+  document.querySelectorAll("#langs button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.lang===lang?"true":"false"));
+}
+document.getElementById("langs").addEventListener("click",e=>{const b=e.target.closest("button"); if(b) applyLang(b.dataset.lang);});
+applyLang("ja");
+</script>
+</body>
+</html>
